@@ -4,7 +4,7 @@ import * as core from "./core.js"
 
 const bellaGrammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))
 
-const coreBuilder = bellaGrammar.createSemantics().addOperation("ast", {
+const astBuilder = bellaGrammar.createSemantics().addOperation("ast", {
   Program(body) {
     return new core.Program(body.children.map(s => s.ast()))
   },
@@ -67,7 +67,7 @@ const coreBuilder = bellaGrammar.createSemantics().addOperation("ast", {
     )
   },
   id(_first, _rest) {
-    return new core.Token("#NID", this.sourceString, this.source.startIdx)
+    return new core.Token("#ID", this.sourceString, this.source.startIdx)
   },
   true(_) {
     return new core.Token("#BOOL", this.sourceString, this.source.startIdx)
@@ -85,5 +85,5 @@ export default function parse(sourceCode) {
   if (!match.succeeded()) {
     throw new Error(match.message)
   }
-  return coreBuilder(match).ast()
+  return astBuilder(match).ast()
 }

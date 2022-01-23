@@ -4,7 +4,6 @@ Bella {
              | function id "(" Params ")" "=" Exp ";"   -- fundec
              | id "=" Exp ";"                           -- assign
              | print Exp ";"                            -- print
-             | Call ";"                                 -- call
              | while Test Block                         -- while
   Block      = "{" Statement+ "}"
 

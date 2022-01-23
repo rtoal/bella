@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Compiler for the Bella programming language",
   "type": "module",
-  "main": "index.js",
+  "main": "bella.js",
   "scripts": {
     "test": "c8 node_modules/.bin/mocha"
   },

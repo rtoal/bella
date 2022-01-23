@@ -3,38 +3,45 @@ Bella {
   Statement  = let id "=" Exp ";"                       -- vardec
              | function id "(" Params ")" "=" Exp ";"   -- fundec
              | id "=" Exp ";"                           -- assign
+             | print Exp ";"                            -- print
              | Call ";"                                 -- call
-             | while Exp Block                          -- while
+             | while Test Block                         -- while
   Block      = "{" Statement+ "}"
-  Exp        = Exp1 "?" Exp1 ":" Exp                    -- conditional
-             | Exp1
-  Exp1       = Exp2 ("&&" Exp2)+                        -- and
-             | Exp2 ("||" Exp2)+                        -- or
-             | Exp2
-  Exp2       = Exp3 ("<"|"<="|"=="|"!="|">="|">") Exp3  -- binary
-             | Exp3
-  Exp3       = Exp3 ("+" | "-") Exp4                    -- binary
-             | Exp4
-  Exp4       = Exp4 ("*" | "/" | "%") Exp5              -- binary
-             | Exp5
-  Exp5       = Exp6 "**" Exp5                           -- binary
-             | Exp6
-  Exp6       = ("!" | "-") Exp6                         -- unary
-             | Exp7
-  Exp7       = num
-             | true
-             | false
+
+  Exp        = "-" Primary                              -- negation
+             | Test "?" Arm ":" Exp                     -- conditional
+             | Arm
+  Arm        = Arm ("+" | "-") Term                     -- binary
+             | Term
+  Term       = Term ("*" | "/" | "%") Factor            -- binary
+             | Factor
+  Factor     = Primary "**" Factor                      -- binary
+             | Primary
+  Primary    = num
              | Call
              | id
              | "(" Exp ")"                              -- parens
+
+  Test       = "!" TruthVal                             -- not
+             | Condition ("&&" Condition)+              -- and
+             | Condition ("||" Condition)+              -- or
+             | Condition
+  Condition  = Exp ("<"|"<="|"=="|"!="|">="|">") Exp    -- relation
+             | TruthVal
+  TruthVal   = true
+             | false
+             | "(" Test ")"                             -- parens
+
   Call       = id "(" Args ")"
   Params     = ListOf<id, ",">
   Args       = ListOf<Exp, ",">
+
   let        = "let" ~idchar
   function   = "function" ~idchar
   while      = "while" ~idchar
   true       = "true" ~idchar
   false      = "false" ~idchar
+  print      = "print" ~idchar
   keyword    = let | function | while | true | false
   num        = digit+ ("." digit+)? (("E" | "e") ("+" | "-")? digit+)?
   id         = ~keyword letter idchar*

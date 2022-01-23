@@ -43,6 +43,12 @@ export class WhileStatement {
   }
 }
 
+export class PrintStatement {
+  constructor(argument) {
+    Object.assign(this, { argument })
+  }
+}
+
 export class Call {
   constructor(callee, args) {
     Object.assign(this, { callee, args })
@@ -67,6 +73,24 @@ export class UnaryExpression {
   }
 }
 
+export class OrExpression {
+  constructor(disjuncts) {
+    Object.assign(this, { disjuncts })
+  }
+}
+
+export class AndExpression {
+  constructor(conjuncts) {
+    Object.assign(this, { conjuncts })
+  }
+}
+
+export class NotExpression {
+  constructor(op, operand) {
+    Object.assign(this, { op, operand })
+  }
+}
+
 export class Variable {
   constructor(name, readOnly) {
     Object.assign(this, { name, readOnly })
@@ -74,8 +98,8 @@ export class Variable {
 }
 
 export class Function {
-  constructor(name, paramCount, readOnly, valueReturning) {
-    Object.assign(this, { name, paramCount, readOnly, valueReturning })
+  constructor(name, paramCount) {
+    Object.assign(this, { name, paramCount })
   }
 }
 

@@ -67,16 +67,16 @@ const coreBuilder = bellaGrammar.createSemantics().addOperation("ast", {
     )
   },
   id(_first, _rest) {
-    return this.sourceString
+    return new core.Token("#NID", this.sourceString, this.source.startIdx)
   },
   true(_) {
-    return true
+    return new core.Token("#BOOL", this.sourceString, this.source.startIdx)
   },
   false(_) {
-    return false
+    return new core.Token("#BOOL", this.sourceString, this.source.startIdx)
   },
   num(_whole, _point, _fraction, _e, _sign, _exponent) {
-    return Number(this.sourceString)
+    return new core.Token("#NUM", this.sourceString, this.source.startIdx)
   },
 })
 

@@ -4,32 +4,30 @@ Bella {
             | function id "(" Params ")" "=" Exp ";"  -- fundec
             | id "=" Exp ";"                          -- assign
             | print Exp ";"                           -- print
-            | while Test Block                        -- while
-  Block     = "{" Statement+ "}"
+            | while Exp Block                         -- while
+  Block     = "{" Statement* "}"
 
-  Exp       = "-" Exp4                                -- negation
-            | Test "?" Exp1 ":" Exp                   -- conditional
+  Exp       = ("-" | "!") Exp7                        -- unary
+            | Exp1 "?" Exp1 ":" Exp                   -- ternary
             | Exp1
-  Exp1      = Exp1 ("+" | "-") Exp2                   -- binary
+  Exp1      = Exp1 "||" Exp2                          -- binary
             | Exp2
-  Exp2      = Exp2 ("*" | "/" | "%") Exp3             -- binary
+  Exp2      = Exp2 "&&" Exp3                          -- binary
             | Exp3
-  Exp3      = Exp4 "**" Exp3                          -- binary
+  Exp3      = Exp4 ("<"|"<="|"=="|"!="|">="|">") Exp4 -- binary
             | Exp4
-  Exp4      = num
+  Exp4      = Exp4 ("+" | "-") Exp5                   -- binary
+            | Exp5
+  Exp5      = Exp5 ("*" | "/" | "%") Exp6             -- binary
+            | Exp6
+  Exp6      = Exp7 "**" Exp6                          -- binary
+            | Exp7
+  Exp7      = num
+            | true
+            | false
             | Call
             | id
             | "(" Exp ")"                             -- parens
-
-  Test      = "!" Test2                               -- not
-            | Test1 ("&&" Test1)+                     -- and
-            | Test1 ("||" Test1)+                     -- or
-            | Test1
-  Test1     = Exp ("<"|"<="|"=="|"!="|">="|">") Exp   -- relation
-            | Test2
-  Test2     = true
-            | false
-            | "(" Test ")"                            -- parens
 
   Call      = id "(" Args ")"
   Params    = ListOf<id, ",">

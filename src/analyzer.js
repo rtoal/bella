@@ -26,7 +26,7 @@ class Context {
   get(token, expectedType) {
     let entity
     for (let context = this; context; context = context.parent) {
-      entity = this.locals.get(token.lexeme)
+      entity = context.locals.get(token.lexeme)
       if (entity) break
     }
     if (!entity) error(`Identifier ${token.lexeme} not declared`, token)
@@ -54,16 +54,18 @@ class Context {
   FunctionDeclaration(d) {
     // Add the function to the context before analyzing the body, because
     // we want to allow functions to be recursive
+    this.add(d.id.lexeme, new Function(d.id.lexeme, d.params.length, true))
     const newContext = new Context(this)
-    for (const p of d.params) newContext.add(p, new Variable(p.lexeme, true))
+    for (const p of d.params) newContext.add(p.lexeme, new Variable(p.lexeme, true))
     d.body = newContext.analyze(d.body)
     return d
   }
   Assignment(s) {
+    const id = s.target
     s.source = this.analyze(s.source)
     s.target = this.analyze(s.target)
     if (s.target.readOnly) {
-      error(`The identifier ${s.target.lexeme} is read only`, s.target)
+      error(`The identifier ${id.lexeme} is read only`, id)
     }
     return s
   }
@@ -78,11 +80,10 @@ class Context {
   }
   Call(c) {
     c.args = this.analyze(c.args)
-    c.callee = this.get(c.callee, Function)
-    if (Number.isFinite(c.callee.paramCount)) {
-      if (c.args.length !== c.callee.paramCount) {
-        error(`Expected ${c.callee.paramCount} arg(s), found ${c.args.length}`)
-      }
+    c.callee.value = this.get(c.callee, Function)
+    const expectedParamCount = c.callee.value.paramCount
+    if (c.args.length !== expectedParamCount) {
+      error(`Expected ${expectedParamCount} arg(s), found ${c.args.length}`, c.callee)
     }
     return c
   }
@@ -101,18 +102,14 @@ class Context {
     e.operand = this.analyze(e.operand)
     return e
   }
-  OrExpression(e) {
-    e.disjuncts = this.analyze(this.disjuncts)
-    return e
-  }
-  AndExpression(e) {
-    e.conjuncts = this.analyze(this.conjuncts)
-    return e
-  }
   Token(t) {
-    if (t.category === "Id") return this.get(t, Variable)
-    if (t.category === "Num") return Number(t.lexeme)
-    if (t.category === "Bool") return t.lexeme === "true"
+    // Shortcut: only handle ids that are variables here, when we analyze
+    // calls we won't dive in here. This shortcut won't work well in
+    // languages with more types.
+    if (t.category === "Id") t.value = this.get(t, Variable)
+    if (t.category === "Num") t.value = Number(t.lexeme)
+    if (t.category === "Bool") t.value = t.lexeme === "true"
+    return t
   }
   Array(a) {
     return a.map(item => this.analyze(item))

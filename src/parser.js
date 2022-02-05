@@ -26,10 +26,10 @@ const astBuilder = bellaGrammar.createSemantics().addOperation("ast", {
   Block(_open, body, _close) {
     return body.ast()
   },
-  Exp_negation(op, operand) {
+  Exp_unary(op, operand) {
     return new core.UnaryExpression(op.ast(), operand.ast())
   },
-  Exp_conditional(test, _questionMark, consequent, _colon, alternate) {
+  Exp_ternary(test, _questionMark, consequent, _colon, alternate) {
     return new core.Conditional(test.ast(), consequent.ast(), alternate.ast())
   },
   Exp1_binary(left, op, right) {
@@ -41,25 +41,17 @@ const astBuilder = bellaGrammar.createSemantics().addOperation("ast", {
   Exp3_binary(left, op, right) {
     return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
   },
-  Exp4_parens(_open, expression, _close) {
-    return expression.ast()
-  },
-  Test_not(op, operand) {
-    return new core.UnaryExpression(op.ast(), operand.ast())
-  },
-  Test_or(left, ors, right) {
-    const [ops, operands] = [ors.ast(), [left.ast(), ...right.ast()]]
-    return operands.reduce((x, y, i) => new core.BinaryExpression(ops[i - 1], x, y))
-  },
-  Test_and(left, ands, right) {
-    const [ops, operands] = [ands.ast(), [left.ast(), ...right.ast()]]
-    return operands.reduce((x, y, i) => new core.BinaryExpression(ops[i - 1], x, y))
-  },
-  Test1_relation(left, op, right) {
+  Exp4_binary(left, op, right) {
     return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
   },
-  Test2_parens(_open, condition, _close) {
-    return condition.ast()
+  Exp5_binary(left, op, right) {
+    return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
+  },
+  Exp6_binary(left, op, right) {
+    return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
+  },
+  Exp7_parens(_open, expression, _close) {
+    return expression.ast()
   },
   Call(callee, _left, args, _right) {
     return new core.Call(callee.ast(), args.asIteration().ast())

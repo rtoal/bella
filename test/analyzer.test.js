@@ -13,7 +13,7 @@ const semanticErrors = [
   ["using undeclared identifiers", "print(x);", /Identifier x not declared/],
   ["a variable used as function", "x = 1; x(2);", /Expected "="/],
   ["a function used as variable", "print(sin + 1);", /expected/],
-  ["redeclared identifier", "let x = 1; let x = 2;", /x has already been declared/],
+  ["re-declared identifier", "let x = 1; let x = 2;", /x has already been declared/],
   ["an attempt to write a read-only var", "π = 3;", /The identifier π is read only/],
   ["too few arguments", "print(sin());", /Expected 1 arg\(s\), found 0/],
   ["too many arguments", "print(sin(5, 10));", /Expected 1 arg\(s\), found 2/],

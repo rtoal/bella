@@ -27,52 +27,57 @@ const astBuilder = bellaGrammar.createSemantics().addOperation("ast", {
     return body.ast()
   },
   Exp_negation(op, operand) {
-    return new core.NegationExpression(op.sourceString, operand.ast())
+    return new core.UnaryExpression(op.ast(), operand.ast())
   },
   Exp_conditional(test, _questionMark, consequent, _colon, alternate) {
     return new core.Conditional(test.ast(), consequent.ast(), alternate.ast())
   },
-  Arm_binary(left, op, right) {
-    return new core.BinaryExpression(op.sourceString, left.ast(), right.ast())
+  Exp1_binary(left, op, right) {
+    return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
   },
-  Term_binary(left, op, right) {
-    return new core.BinaryExpression(op.sourceString, left.ast(), right.ast())
+  Exp2_binary(left, op, right) {
+    return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
   },
-  Factor_binary(left, op, right) {
-    return new core.BinaryExpression(op.sourceString, left.ast(), right.ast())
+  Exp3_binary(left, op, right) {
+    return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
   },
-  Primary_parens(_open, expression, _close) {
+  Exp4_parens(_open, expression, _close) {
     return expression.ast()
   },
   Test_not(op, operand) {
-    return new core.NotExpression(op.sourceString, operand.ast())
+    return new core.UnaryExpression(op.ast(), operand.ast())
   },
-  Test_or(left, _ops, right) {
-    return new core.OrExpression([left.ast(), ...right.ast()])
+  Test_or(left, ors, right) {
+    const [ops, operands] = [ors.ast(), [left.ast(), ...right.ast()]]
+    return operands.reduce((x, y, i) => new core.BinaryExpression(ops[i - 1], x, y))
   },
-  Test_and(left, _ops, right) {
-    return new core.AndExpression([left.ast(), ...right.ast()])
+  Test_and(left, ands, right) {
+    const [ops, operands] = [ands.ast(), [left.ast(), ...right.ast()]]
+    return operands.reduce((x, y, i) => new core.BinaryExpression(ops[i - 1], x, y))
   },
-  Condition_relation(left, op, right) {
-    return new core.BinaryExpression(op.sourceString, left.ast(), right.ast())
+  Test1_relation(left, op, right) {
+    return new core.BinaryExpression(op.ast(), left.ast(), right.ast())
   },
-  TruthVal_parens(_open, condition, _close) {
+  Test2_parens(_open, condition, _close) {
     return condition.ast()
   },
   Call(callee, _left, args, _right) {
     return new core.Call(callee.ast(), args.asIteration().ast())
   },
   id(_first, _rest) {
-    return new core.Token("Id", this.sourceString, this.source.startIdx)
+    return new core.Token("Id", this.source)
   },
   true(_) {
-    return new core.Token("Bool", this.sourceString, this.source.startIdx)
+    return new core.Token("Bool", this.source)
   },
   false(_) {
-    return new core.Token("Bool", this.sourceString, this.source.startIdx)
+    return new core.Token("Bool", this.source)
   },
   num(_whole, _point, _fraction, _e, _sign, _exponent) {
-    return new core.Token("Num", this.sourceString, this.source.startIdx)
+    return new core.Token("Num", this.source)
+  },
+  _terminal() {
+    return new core.Token("Sym", this.source)
   },
   _iter(...children) {
     return children.map(child => child.ast())

@@ -7,12 +7,6 @@
 
 import util from "util"
 
-export class Token {
-  constructor(category, lexeme, position) {
-    Object.assign(this, { category, lexeme, position })
-  }
-}
-
 export class Program {
   constructor(statements) {
     this.statements = statements
@@ -73,21 +67,14 @@ export class UnaryExpression {
   }
 }
 
-export class OrExpression {
-  constructor(disjuncts) {
-    Object.assign(this, { disjuncts })
+// Token objects are wrappers around the Nodes produced by Ohm. We use
+// them here just for simple things like numbers and identifiers. The
+export class Token {
+  constructor(category, source) {
+    Object.assign(this, { category, source })
   }
-}
-
-export class AndExpression {
-  constructor(conjuncts) {
-    Object.assign(this, { conjuncts })
-  }
-}
-
-export class NotExpression {
-  constructor(op, operand) {
-    Object.assign(this, { op, operand })
+  get lexeme() {
+    return this.source.contents
   }
 }
 
@@ -98,33 +85,37 @@ export class Variable {
 }
 
 export class Function {
-  constructor(name, paramCount) {
-    Object.assign(this, { name, paramCount })
+  constructor(name, paramCount, readOnly) {
+    Object.assign(this, { name, paramCount, readOnly })
   }
 }
 
 export const standardLibrary = Object.freeze({
   π: new Variable("π", true),
-  sqrt: new Function("sqrt", 1, true, true),
-  sin: new Function("sin", 1, true, true),
-  cos: new Function("cos", 1, true, true),
-  random: new Function("random", 0, true, true),
-  print: new Function("print", Infinity, true, false),
+  sqrt: new Function("sqrt", 1, true),
+  sin: new Function("sin", 1, true),
+  cos: new Function("cos", 1, true),
+  exp: new Function("exp", 1, true),
+  ln: new Function("ln", 1, true),
+  print: new Function("hypot", 2, true),
 })
 
-export function error(message, { line, column } = {}) {
-  throw new Error(`Line ${line ?? "-"}, Column ${column ?? "-"}: ${message}`)
+export function error(message, token) {
+  if (token) {
+    throw new Error(`${token.source.getLineAndColumnMessage()}${message}`)
+  }
+  throw new Error(message)
 }
 
 Program.prototype[util.inspect.custom] = function () {
   // Return a compact and pretty string representation of the node graph,
   // taking care of cycles. Written here from scratch because the built-in
   // inspect function, while nice, isn't nice enough. Defined properly in
-  // the AST root class prototype so it automatically runs on console.log.
+  // the root class prototype so it automatically runs on console.log.
   const tags = new Map()
 
   function tag(node) {
-    // Attach a unique integer tag to every AST node
+    // Attach a unique integer tag to every node
     if (tags.has(node)) return
     if (typeof node !== "object" || node === null) return
     if (node.constructor === Token) return
@@ -137,16 +128,14 @@ Program.prototype[util.inspect.custom] = function () {
   function* lines() {
     function view(e) {
       if (tags.has(e)) return `#${tags.get(e)}`
-      if (e?.constructor === Token) {
-        return `${e.category}(${e.lexeme})`
-      }
+      if (e?.constructor === Token) return `${e.category}(${e.lexeme})`
       if (Array.isArray(e)) return `[${e.map(view)}]`
       return util.inspect(e)
     }
     for (let [node, id] of [...tags.entries()].sort((a, b) => a[1] - b[1])) {
-      let [type, props] = [node.constructor.name, ""]
-      Object.entries(node).forEach(([k, v]) => (props += ` ${k}=${view(v)}`))
-      yield `${String(id).padStart(4, " ")} | ${type}${props}`
+      let type = node.constructor.name
+      let props = Object.entries(node).map(([k, v]) => `${k}=${view(v)}`)
+      yield `${String(id).padStart(4, " ")} | ${type} ${props.join(" ")}`
     }
   }
 

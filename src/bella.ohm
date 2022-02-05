@@ -14,7 +14,7 @@ Bella {
             | Exp2
   Exp2      = Exp2 "&&" Exp3                          -- binary
             | Exp3
-  Exp3      = Exp4 ("<"|"<="|"=="|"!="|">="|">") Exp4 -- binary
+  Exp3      = Exp4 ("<="|"<"|"=="|"!="|">="|">") Exp4 -- binary
             | Exp4
   Exp4      = Exp4 ("+" | "-") Exp5                   -- binary
             | Exp5

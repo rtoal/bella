@@ -28,12 +28,10 @@ You can then run `npm test`.
 
 ## Usage
 
-You can run this on the command line or use this as a module in a larger program.
-
-Command line syntax:
+To run from the command line:
 
 ```
-node bella.js <filename> <outputType>
+node src/bella.js <filename> <outputType>
 ```
 
 The `outputType` indicates what you wish to print to standard output:
@@ -43,20 +41,8 @@ The `outputType` indicates what you wish to print to standard output:
 <tr><td>ast</td><td>The AST</td></tr>
 <tr><td>analyzed</td><td>The decorated AST</td></tr>
 <tr><td>optimized</td><td>The optimized decorated AST</td></tr>
-<tr><td>llvm</td><td>The translation of the program to LLVM IR</td></tr>
-<tr><td>c</td><td>The translation of the program to C</td></tr>
 <tr><td>js</td><td>The translation of the program to JavaScript</td></tr>
 </table>
-
-To embed in another program:
-
-```
-import { compile } from astro
-
-compile(programAsString, outputType)
-```
-
-where the `outputType` argument is as in the previous section.
 
 ## Contributing
 

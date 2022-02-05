@@ -61,11 +61,10 @@ class Context {
     return d
   }
   Assignment(s) {
-    const id = s.target
     s.source = this.analyze(s.source)
     s.target = this.analyze(s.target)
-    if (s.target.readOnly) {
-      error(`The identifier ${id.lexeme} is read only`, id)
+    if (s.target.value.readOnly) {
+      error(`The identifier ${s.target.lexeme} is read only`, s.target)
     }
     return s
   }

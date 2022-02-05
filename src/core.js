@@ -98,7 +98,7 @@ export const standardLibrary = Object.freeze({
   cos: new Function("cos", 1, true),
   exp: new Function("exp", 1, true),
   ln: new Function("ln", 1, true),
-  print: new Function("hypot", 2, true),
+  hypot: new Function("hypot", 2, true),
 })
 
 // Throw an error message that takes advantage of Ohm's messaging

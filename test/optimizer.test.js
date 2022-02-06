@@ -7,7 +7,10 @@ import * as core from "../src/core.js"
 // Make some test cases easier to read
 const x = new core.Variable("x", false)
 const neg = x => new core.UnaryExpression("-", x)
-const plus = (x, y) => new core.BinaryExpression("+", x, y)
+const power = (x, y) => new core.BinaryExpression("**", x, y)
+const cond = (x, y, z) => new core.Conditional(x, y, z)
+const sqrt = core.standardLibrary.sqrt
+const call = (f, args) => new core.Call(f, args)
 
 function expression(e) {
   return analyze(parse(`let x=1; print ${e};`)).statements[1].argument
@@ -38,7 +41,12 @@ const tests = [
   ["optimizes cos", expression("cos(0)"), 1],
   ["optimizes deeply", expression("8 * (-5) + 2 ** 3"), -32],
   ["optimizes arguments", expression("sqrt(20 + 61)"), 9],
-  ["is ok with doing nothing", expression("x + 5"), plus(x, 5)],
+  ["optimizes true conditionals", expression("1?3:5"), 3],
+  ["optimizes false conditionals", expression("0?3:5"), 5],
+  ["leaves nonoptimizable binaries alone", expression("x ** 5"), power(x, 5)],
+  ["leaves 0**0 alone", expression("0 ** 0"), power(0, 0)],
+  ["leaves nonoptimizable conditionals alone", expression("x?x:2"), cond(x, x, 2)],
+  ["leaves nonoptimizable calls alone", expression("sqrt(x)"), call(sqrt, [x])],
   [
     "optimizes in function body",
     analyze(parse("function f() = 1+1;")),

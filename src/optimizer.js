@@ -125,12 +125,12 @@ const optimizers = {
   Token(t) {
     return t.value ?? t.lexeme
   },
-  Variable(v) {
-    return v
-  },
-  Function(f) {
-    return f
-  },
+  // Variable(v) {
+  //   return v
+  // },
+  // Function(f) {
+  //   return f
+  // },
   Array(a) {
     // Optimizing arrays involves flattening an removing nulls
     return a.flatMap(optimize).filter(s => s !== null)

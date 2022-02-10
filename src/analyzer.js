@@ -48,15 +48,21 @@ class Context {
     // the declaration. That is, "let x=x;" should be an error (unless x
     // was already defined in an outer scope.)
     d.initializer = this.analyze(d.initializer)
-    this.add(d.id.lexeme, new Variable(d.id.lexeme, false))
+    d.variable = new Variable(d.id.lexeme, false)
+    this.add(d.id.lexeme, d.variable)
     return d
   }
   FunctionDeclaration(d) {
     // Add the function to the context before analyzing the body, because
     // we want to allow functions to be recursive
-    this.add(d.id.lexeme, new Function(d.id.lexeme, d.params.length, true))
+    d.function = new Function(d.id.lexeme, d.params.length, true)
+    this.add(d.id.lexeme, d.function)
     const newContext = new Context(this)
-    for (const p of d.params) newContext.add(p.lexeme, new Variable(p.lexeme, true))
+    d.params = d.params.map(p => {
+      let variable = new Variable(p.lexeme, true)
+      newContext.add(p.lexeme, variable)
+      return variable
+    })
     d.body = newContext.analyze(d.body)
     return d
   }

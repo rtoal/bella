@@ -39,6 +39,8 @@ const tests = [
   ["optimizes sqrt", expression("sqrt(16)"), 4],
   ["optimizes sin", expression("sin(0)"), 0],
   ["optimizes cos", expression("cos(0)"), 1],
+  ["optimizes exp", expression("exp(1)"), Math.E],
+  ["optimizes ln", expression("ln(2)"), Math.LN2],
   ["optimizes deeply", expression("8 * (-5) + 2 ** 3"), -32],
   ["optimizes arguments", expression("sqrt(20 + 61)"), 9],
   ["optimizes true conditionals", expression("1?3:5"), 3],
@@ -47,6 +49,7 @@ const tests = [
   ["leaves 0**0 alone", expression("0 ** 0"), power(0, 0)],
   ["leaves nonoptimizable conditionals alone", expression("x?x:2"), cond(x, x, 2)],
   ["leaves nonoptimizable calls alone", expression("sqrt(x)"), call(sqrt, [x])],
+  ["leaves nonoptimizable negations alone", expression("-x"), neg(x)],
   [
     "optimizes in function body",
     analyze(parse("function f() = 1+1;")),

@@ -26,6 +26,12 @@ const optimizers = {
     d.initializer = optimize(d.initializer)
     return d
   },
+  Variable(v) {
+    return v
+  },
+  Function(f) {
+    return f
+  },
   FunctionDeclaration(d) {
     d.id = optimize(d.id)
     d.params = optimize(d.params)

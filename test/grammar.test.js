@@ -1,6 +1,6 @@
 import assert from "assert/strict"
-import util from "util"
-import ast from "../src/ast.js"
+import fs from "fs"
+import ohm from "ohm-js"
 
 const syntaxChecks = [
   ["all numeric literal forms", "print(8 * 89.123);"],
@@ -23,37 +23,24 @@ const syntaxErrors = [
   ["a missing right operand", "print(5 -", /Line 1, col 10/],
   ["a non-operator", "print(7 * ((2 _ 3)", /Line 1, col 15/],
   ["an expression starting with a )", "x = );", /Line 1, col 5/],
-  ["a statement starting with expression", "x * 5;", /Error: Line 1, col 3/],
+  ["a statement starting with expression", "x * 5;", /Line 1, col 3/],
   ["an illegal statement on line 2", "print(5);\nx * 5;", /Line 2, col 3/],
   ["a statement starting with a )", "print(5);\n) * 5", /Line 2, col 1/],
   ["an expression starting with a *", "x = * 71;", /Line 1, col 5/],
 ]
 
-const source = `let x=-1;function f(x)=3*7;while(true){x=3;print(x?f(true):2);}`
-
-const expected = `   1 | Program statements=[#2,#4,#6]
-   2 | VariableDeclaration id=Id("x") initializer=#3
-   3 | UnaryExpression op=Sym("-") operand=Num("1")
-   4 | FunctionDeclaration id=Id("f") params=[Id("x")] body=#5
-   5 | BinaryExpression op=Sym("*") left=Num("3") right=Num("7")
-   6 | WhileStatement test=Bool("true") body=[#7,#8]
-   7 | Assignment target=Id("x") source=Num("3")
-   8 | PrintStatement argument=#9
-   9 | Conditional test=Id("x") consequent=#10 alternate=Num("2")
-  10 | Call callee=Id("f") args=[Bool("true")]`
-
-describe("The astr", () => {
+describe("The grammar", () => {
+  const grammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))
   for (const [scenario, source] of syntaxChecks) {
-    it(`recognizes that ${scenario}`, () => {
-      assert(ast(source))
+    it(`properly specifies ${scenario}`, () => {
+      assert(grammar.match(source).succeeded())
     })
   }
   for (const [scenario, source, errorMessagePattern] of syntaxErrors) {
-    it(`throws on ${scenario}`, () => {
-      assert.throws(() => ast(source), errorMessagePattern)
+    it(`does not permit ${scenario}`, () => {
+      const match = grammar.match(source)
+      assert(!match.succeeded())
+      assert(new RegExp(errorMessagePattern).test(match.message))
     })
   }
-  it("produces the expected AST for all node types", () => {
-    assert.deepEqual(util.format(ast(source)), expected)
-  })
 })

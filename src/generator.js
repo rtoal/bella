@@ -9,8 +9,8 @@ export default function generate(program) {
   const output = []
 
   // Variable names in JS will be suffixed with _1, _2, _3, etc. This is
-  // because "while", for example, is a legal variable name in Bella, but
-  // not in JS. So we want to generate something like "while_1". We handle
+  // because "for", for example, is a legal variable name in Bella, but
+  // not in JS. So we want to generate something like "for_1". We handle
   // this by mapping each variable declaration to its suffix.
   const targetName = (mapping => {
     return entity => {
@@ -83,8 +83,7 @@ export default function generate(program) {
       return e
     },
     Array(a) {
-      const mapped = a.map(gen)
-      return mapped
+      return a.map(gen)
     },
   }
 

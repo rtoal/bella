@@ -124,6 +124,9 @@ const optimizers = {
     return e
   },
   Token(t) {
+    // All tokens get optimized away and basically replace with either their
+    // value (obtained by the analyzer for literals and ids) or simply with
+    // lexeme (if a plain symbol like an operator)
     return t.value ?? t.lexeme
   },
   Array(a) {

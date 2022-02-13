@@ -108,9 +108,10 @@ class Context {
     return e
   }
   Token(t) {
-    // Shortcut: only handle ids that are variables here, when we analyze
-    // calls we won't dive in here. This shortcut won't work well in
-    // languages with more types.
+    // Shortcut: only handle ids that are variables, not functions, here.
+    // We will handle the ids in function calls in the Call() handler. This
+    // strategy only works here, but in more complex languages, we would do
+    // proper type checking.
     if (t.category === "Id") t.value = this.get(t, Variable)
     if (t.category === "Num") t.value = Number(t.lexeme)
     if (t.category === "Bool") t.value = t.lexeme === "true"

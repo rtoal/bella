@@ -1,6 +1,6 @@
 import assert from "assert/strict"
 import util from "util"
-import parse from "../src/parser.js"
+import ast from "../src/ast.js"
 
 const syntaxChecks = [
   ["all numeric literal forms", "print(8 * 89.123);"],
@@ -42,18 +42,18 @@ const expected = `   1 | Program statements=[#2,#4,#6]
    9 | Conditional test=Id("x") consequent=#10 alternate=Num("2")
   10 | Call callee=Id("f") args=[Bool("true")]`
 
-describe("The parser", () => {
+describe("The astr", () => {
   for (const [scenario, source] of syntaxChecks) {
     it(`recognizes that ${scenario}`, () => {
-      assert(parse(source))
+      assert(ast(source))
     })
   }
   for (const [scenario, source, errorMessagePattern] of syntaxErrors) {
     it(`throws on ${scenario}`, () => {
-      assert.throws(() => parse(source), errorMessagePattern)
+      assert.throws(() => ast(source), errorMessagePattern)
     })
   }
   it("produces the expected AST for all node types", () => {
-    assert.deepEqual(util.format(parse(source)), expected)
+    assert.deepEqual(util.format(ast(source)), expected)
   })
 })

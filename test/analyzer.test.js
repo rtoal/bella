@@ -1,6 +1,6 @@
 import util from "util"
 import assert from "assert/strict"
-import parse from "../src/parser.js"
+import ast from "../src/ast.js"
 import analyze from "../src/analyzer.js"
 
 const semanticChecks = [
@@ -38,15 +38,15 @@ const expected = `   1 | Program statements=[#2,#5,#9]
 describe("The analyzer", () => {
   for (const [scenario, source] of semanticChecks) {
     it(`recognizes ${scenario}`, () => {
-      assert.ok(analyze(parse(source)))
+      assert.ok(analyze(ast(source)))
     })
   }
   for (const [scenario, source, errorMessagePattern] of semanticErrors) {
     it(`throws on ${scenario}`, () => {
-      assert.throws(() => analyze(parse(source)), errorMessagePattern)
+      assert.throws(() => analyze(ast(source)), errorMessagePattern)
     })
   }
   it(`produces the expected graph for the simple sample program`, () => {
-    assert.deepEqual(util.format(analyze(parse(source))), expected)
+    assert.deepEqual(util.format(analyze(ast(source))), expected)
   })
 })

@@ -76,7 +76,7 @@ const astBuilder = bellaGrammar.createSemantics().addOperation("ast", {
   },
 })
 
-export default function parse(sourceCode) {
+export default function ast(sourceCode) {
   const match = bellaGrammar.match(sourceCode)
   if (!match.succeeded()) core.error(match.message)
   return astBuilder(match).ast()

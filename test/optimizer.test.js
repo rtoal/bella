@@ -1,5 +1,5 @@
 import assert from "assert/strict"
-import parse from "../src/parser.js"
+import ast from "../src/ast.js"
 import analyze from "../src/analyzer.js"
 import optimize from "../src/optimizer.js"
 import * as core from "../src/core.js"
@@ -13,7 +13,7 @@ const sqrt = core.standardLibrary.sqrt
 const call = (f, args) => new core.Call(f, args)
 
 function expression(e) {
-  return analyze(parse(`let x=1; print ${e};`)).statements[1].argument
+  return analyze(ast(`let x=1; print ${e};`)).statements[1].argument
 }
 
 const tests = [
@@ -52,17 +52,17 @@ const tests = [
   ["leaves nonoptimizable negations alone", expression("-x"), neg(x)],
   [
     "optimizes in function body",
-    analyze(parse("function f() = 1+1;")),
-    optimize(analyze(parse("function f() = 2;"))),
+    analyze(ast("function f() = 1+1;")),
+    optimize(analyze(ast("function f() = 2;"))),
   ],
   [
     "removes x=x",
-    analyze(parse("let x=1; x=x; print(x);")),
-    optimize(analyze(parse("let x=1; print(x);"))),
+    analyze(ast("let x=1; x=x; print(x);")),
+    optimize(analyze(ast("let x=1; print(x);"))),
   ],
   [
     "optimizes while test",
-    analyze(parse("while sqrt(25) {}")),
+    analyze(ast("while sqrt(25) {}")),
     new core.Program([new core.WhileStatement(5, [])]),
   ],
 ]

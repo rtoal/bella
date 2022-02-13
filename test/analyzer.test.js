@@ -25,7 +25,7 @@ const expected = `   1 | Program statements=[#2,#5,#9]
    2 | VariableDeclaration id=Id("x") initializer=#3 variable=#4
    3 | UnaryExpression op=Sym("-") operand=Num("1",1)
    4 | Variable name='x' readOnly=false
-   5 | FunctionDeclaration id=Id("f") params=[#6] body=#7 function=#8
+   5 | FunctionDeclaration id=Id("f") params=[Id("x",#6)] body=#7 function=#8
    6 | Variable name='x' readOnly=true
    7 | BinaryExpression op=Sym("*") left=Num("3",3) right=Num("7",7)
    8 | Function name='f' paramCount=1 readOnly=true

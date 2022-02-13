@@ -58,11 +58,11 @@ class Context {
     d.function = new Function(d.id.lexeme, d.params.length, true)
     this.add(d.id.lexeme, d.function)
     const newContext = new Context(this)
-    d.params = d.params.map(p => {
+    for (const p of d.params) {
       let variable = new Variable(p.lexeme, true)
       newContext.add(p.lexeme, variable)
-      return variable
-    })
+      p.value = variable
+    }
     d.body = newContext.analyze(d.body)
     return d
   }

@@ -53,12 +53,12 @@ const tests = [
   [
     "optimizes in function body",
     analyze(parse("function f() = 1+1;")),
-    new core.Program([new core.FunctionDeclaration("f", [], 2)]),
+    optimize(analyze(parse("function f() = 2;"))),
   ],
   [
     "removes x=x",
     analyze(parse("let x=1; x=x; print(x);")),
-    new core.Program([new core.VariableDeclaration("x", 1), new core.PrintStatement(x)]),
+    optimize(analyze(parse("let x=1; print(x);"))),
   ],
   [
     "optimizes while test",

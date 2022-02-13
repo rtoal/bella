@@ -21,18 +21,19 @@ const semanticErrors = [
 
 const source = `let x=-1;function f(x)=3*7;while(true){x=3;print(x?f(true):2);}`
 
-const expected = `   1 | Program statements=[#2,#4,#6]
-   2 | VariableDeclaration id=Id("x") initializer=#3
+const expected = `   1 | Program statements=[#2,#5,#9]
+   2 | VariableDeclaration id=Id("x") initializer=#3 variable=#4
    3 | UnaryExpression op=Sym("-") operand=Num("1",1)
-   4 | FunctionDeclaration id=Id("f") params=[Id("x")] body=#5
-   5 | BinaryExpression op=Sym("*") left=Num("3",3) right=Num("7",7)
-   6 | WhileStatement test=Bool("true",true) body=[#7,#9]
-   7 | Assignment target=Id("x",#8) source=Num("3",3)
-   8 | Variable name='x' readOnly=false
-   9 | PrintStatement argument=#10
-  10 | Conditional test=Id("x",#8) consequent=#11 alternate=Num("2",2)
-  11 | Call callee=Id("f",#12) args=[Bool("true",true)]
-  12 | Function name='f' paramCount=1 readOnly=true`
+   4 | Variable name='x' readOnly=false
+   5 | FunctionDeclaration id=Id("f") params=[#6] body=#7 function=#8
+   6 | Variable name='x' readOnly=true
+   7 | BinaryExpression op=Sym("*") left=Num("3",3) right=Num("7",7)
+   8 | Function name='f' paramCount=1 readOnly=true
+   9 | WhileStatement test=Bool("true",true) body=[#10,#11]
+  10 | Assignment target=Id("x",#4) source=Num("3",3)
+  11 | PrintStatement argument=#12
+  12 | Conditional test=Id("x",#4) consequent=#13 alternate=Num("2",2)
+  13 | Call callee=Id("f",#8) args=[Bool("true",true)]`
 
 describe("The analyzer", () => {
   for (const [scenario, source] of semanticChecks) {

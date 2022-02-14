@@ -19,7 +19,7 @@ const semanticErrors = [
   ["too many arguments", "print(sin(5, 10));", /Expected 1 arg\(s\), found 2/],
 ]
 
-const source = `let x=-1;function f(x)=3*7;while(true){x=3;print(x?f(true):2);}`
+const source = `let x=-1;function f(x)=3*x;while(true){x=3;print(x?f(true):2);}`
 
 const expected = `   1 | Program statements=[#2,#5,#9]
    2 | VariableDeclaration id=Id("x") initializer=#3 variable=#4
@@ -27,7 +27,7 @@ const expected = `   1 | Program statements=[#2,#5,#9]
    4 | Variable name='x' readOnly=false
    5 | FunctionDeclaration id=Id("f") params=[Id("x",#6)] body=#7 function=#8
    6 | Variable name='x' readOnly=true
-   7 | BinaryExpression op=Sym("*") left=Num("3",3) right=Num("7",7)
+   7 | BinaryExpression op=Sym("*") left=Num("3",3) right=Id("x",#6)
    8 | Function name='f' paramCount=1 readOnly=true
    9 | WhileStatement test=Bool("true",true) body=[#10,#11]
   10 | Assignment target=Id("x",#4) source=Num("3",3)

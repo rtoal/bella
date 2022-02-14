@@ -39,18 +39,16 @@ class Context {
     return this[node.constructor.name](node)
   }
   Program(p) {
-    p.statements = this.analyze(p.statements)
-    return p
+    this.analyze(p.statements)
   }
   VariableDeclaration(d) {
     // Analyze the initializer *before* adding the variable to the context,
     // because we don't want the variable to come into scope until after
     // the declaration. That is, "let x=x;" should be an error (unless x
     // was already defined in an outer scope.)
-    d.initializer = this.analyze(d.initializer)
+    this.analyze(d.initializer)
     d.variable = new Variable(d.id.lexeme, false)
     this.add(d.id.lexeme, d.variable)
-    return d
   }
   FunctionDeclaration(d) {
     // Add the function to the context before analyzing the body, because
@@ -63,49 +61,41 @@ class Context {
       newContext.add(p.lexeme, variable)
       p.value = variable
     }
-    d.body = newContext.analyze(d.body)
-    return d
+    newContext.analyze(d.body)
   }
   Assignment(s) {
-    s.source = this.analyze(s.source)
-    s.target = this.analyze(s.target)
+    this.analyze(s.source)
+    this.analyze(s.target)
     if (s.target.value.readOnly) {
       error(`The identifier ${s.target.lexeme} is read only`, s.target)
     }
-    return s
   }
   WhileStatement(s) {
-    s.test = this.analyze(s.test)
-    s.body = this.analyze(s.body)
-    return s
+    this.analyze(s.test)
+    this.analyze(s.body)
   }
   PrintStatement(s) {
-    s.argument = this.analyze(s.argument)
-    return s
+    this.analyze(s.argument)
   }
   Call(c) {
-    c.args = this.analyze(c.args)
+    this.analyze(c.args)
     c.callee.value = this.get(c.callee, Function)
     const expectedParamCount = c.callee.value.paramCount
     if (c.args.length !== expectedParamCount) {
       error(`Expected ${expectedParamCount} arg(s), found ${c.args.length}`, c.callee)
     }
-    return c
   }
   Conditional(c) {
-    c.test = this.analyze(c.test)
-    c.consequent = this.analyze(c.consequent)
-    c.alternate = this.analyze(c.alternate)
-    return c
+    this.analyze(c.test)
+    this.analyze(c.consequent)
+    this.analyze(c.alternate)
   }
   BinaryExpression(e) {
-    e.left = this.analyze(e.left)
-    e.right = this.analyze(e.right)
-    return e
+    this.analyze(e.left)
+    this.analyze(e.right)
   }
   UnaryExpression(e) {
-    e.operand = this.analyze(e.operand)
-    return e
+    this.analyze(e.operand)
   }
   Token(t) {
     // Shortcut: only handle ids that are variables, not functions, here.
@@ -115,10 +105,9 @@ class Context {
     if (t.category === "Id") t.value = this.get(t, Variable)
     if (t.category === "Num") t.value = Number(t.lexeme)
     if (t.category === "Bool") t.value = t.lexeme === "true"
-    return t
   }
   Array(a) {
-    return a.map(item => this.analyze(item))
+    a.forEach(item => this.analyze(item))
   }
 }
 
@@ -127,5 +116,6 @@ export default function analyze(programNode) {
   for (const [name, entity] of Object.entries(standardLibrary)) {
     initialContext.add(name, entity)
   }
-  return initialContext.analyze(programNode)
+  initialContext.analyze(programNode)
+  return programNode
 }

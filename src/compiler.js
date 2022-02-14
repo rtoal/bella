@@ -4,14 +4,14 @@ import optimize from "./optimizer.js"
 import generate from "./generator.js"
 
 export default function compile(source, outputType) {
-  const tree = ast(source)
-  if (outputType === "ast") return tree
-  const analyzed = analyze(tree)
+  if (!["ast", "analyzed", "optimized", "js"].includes(outputType)) {
+    throw new Error("Unknown output type")
+  }
+  const program = ast(source)
+  if (outputType === "ast") return program
+  const analyzed = analyze(program)
   if (outputType === "analyzed") return analyzed
   const optimized = optimize(analyzed)
   if (outputType === "optimized") return optimized
-  if (outputType === "js") {
-    return generate(optimized)
-  }
-  throw new Error("Unknown output type")
+  return generate(optimized)
 }

@@ -1,1 +1,1 @@
-let x=-1;function f(x)=3*7;while(true){x=3;print(true?f(x):2);}
+let x=-1;function f(x)=3*x;while(true){x=3;print(x?f(true):2);}

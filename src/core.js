@@ -14,14 +14,14 @@ export class Program {
 }
 
 export class VariableDeclaration {
-  constructor(id, initializer) {
-    Object.assign(this, { id, initializer })
+  constructor(variable, initializer) {
+    Object.assign(this, { variable, initializer })
   }
 }
 
 export class FunctionDeclaration {
-  constructor(id, params, body) {
-    Object.assign(this, { id, params, body })
+  constructor(fun, params, body) {
+    Object.assign(this, { fun, params, body })
   }
 }
 

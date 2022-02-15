@@ -35,7 +35,7 @@ export default function generate(program) {
       return targetName(v)
     },
     FunctionDeclaration(d) {
-      output.push(`function ${targetName(d.function)}(${d.params.join(", ")}) {`)
+      output.push(`function ${targetName(d.fun)}(${d.params.join(", ")}) {`)
       output.push(`return ${gen(d.body)};`)
       output.push("}")
     },

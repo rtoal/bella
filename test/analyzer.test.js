@@ -19,21 +19,22 @@ const semanticErrors = [
   ["too many arguments", "print(sin(5, 10));", /Expected 1 arg\(s\), found 2/],
 ]
 
-const source = `let x=-1;function f(x)=3*x;while(true){x=3;print(x?f(true):2);}`
+const source = `let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}`
 
-const expected = `   1 | Program statements=[#2,#5,#9]
+const expected = `   1 | Program statements=[#2,#6,#10]
    2 | VariableDeclaration variable=Id("x",#3) initializer=#4
    3 | Variable name='x' readOnly=false
-   4 | UnaryExpression op=Sym("-") operand=Num("1",1)
-   5 | FunctionDeclaration fun=Id("f",#6) params=[Id("x",#7)] body=#8
-   6 | Function name='f' paramCount=1 readOnly=true
-   7 | Variable name='x' readOnly=true
-   8 | BinaryExpression op=Sym("*") left=Num("3",3) right=Id("x",#7)
-   9 | WhileStatement test=Bool("true",true) body=[#10,#11]
-  10 | Assignment target=Id("x",#3) source=Num("3",3)
-  11 | PrintStatement argument=#12
-  12 | Conditional test=Id("x",#3) consequent=#13 alternate=Num("2",2)
-  13 | Call callee=Id("f",#6) args=[Bool("true",true)]`
+   4 | Call callee=Id("sqrt",#5) args=[Num("9",9)]
+   5 | Function name='sqrt' paramCount=1 readOnly=true
+   6 | FunctionDeclaration fun=Id("f",#7) params=[Id("x",#8)] body=#9
+   7 | Function name='f' paramCount=1 readOnly=true
+   8 | Variable name='x' readOnly=true
+   9 | BinaryExpression op=Sym("*") left=Num("3",3) right=Id("x",#8)
+  10 | WhileStatement test=Bool("true",true) body=[#11,#12]
+  11 | Assignment target=Id("x",#3) source=Num("3",3)
+  12 | PrintStatement argument=#13
+  13 | Conditional test=Num("0") consequent=#14 alternate=Num("2",2)
+  14 | Call callee=Id("f",#7) args=[Id("x",#3)]`
 
 describe("The analyzer", () => {
   for (const [scenario, source] of semanticChecks) {

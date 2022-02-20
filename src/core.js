@@ -135,7 +135,7 @@ Program.prototype[util.inspect.custom] = function () {
     function view(e) {
       if (tags.has(e)) return `#${tags.get(e)}`
       if (e?.constructor === Token) {
-        return `${e.category}("${e.lexeme}"${e.value ? "," + view(e.value) : ""})`
+        return `(${e.category},"${e.lexeme}"${e.value ? "," + view(e.value) : ""})`
       }
       if (Array.isArray(e)) return `[${e.map(view)}]`
       return util.inspect(e)

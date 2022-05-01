@@ -74,7 +74,6 @@ const optimizers = {
     return c
   },
   BinaryExpression(e) {
-    e.op = optimize(e.op)
     e.left = optimize(e.left)
     e.right = optimize(e.right)
     if (e.left.constructor === Number) {
@@ -117,7 +116,6 @@ const optimizers = {
     return e
   },
   UnaryExpression(e) {
-    e.op = optimize(e.op)
     e.operand = optimize(e.operand)
     if (e.operand.constructor === Number) {
       if (e.op === "-") {
@@ -126,11 +124,11 @@ const optimizers = {
     }
     return e
   },
-  Token(t) {
-    // All tokens get optimized away and basically replace with either their
-    // value (obtained by the analyzer for literals and ids) or simply with
-    // lexeme (if a plain symbol like an operator)
-    return t.value ?? t.lexeme
+  Number(n) {
+    return n
+  },
+  Boolean(b) {
+    return b
   },
   Array(a) {
     // Optimizing arrays involves flattening an removing nulls

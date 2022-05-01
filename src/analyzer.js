@@ -138,16 +138,16 @@ export default function analyze(sourceCode) {
       return new core.Token("Id", this.source)
     },
     true(_) {
-      return new core.Token("Bool", this.source, true)
+      return true
     },
     false(_) {
-      return new core.Token("Bool", this.source, false)
+      return false
     },
     num(_whole, _point, _fraction, _e, _sign, _exponent) {
-      return new core.Token("Num", this.source, Number(this.source.contents))
+      return Number(this.source.contents)
     },
     _terminal() {
-      return new core.Token("Sym", this.source)
+      return this.source.contents
     },
     _iter(...children) {
       return children.map(child => child.rep())

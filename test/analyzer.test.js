@@ -21,11 +21,11 @@ const semanticErrors = [
 const source = `let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}`
 
 const expected = `   1 | Program statements=[#2,#6,#10]
-   2 | VariableDeclaration variable=(Id,"x",#3) initializer=#4
+   2 | VariableDeclaration variable=#3 initializer=#4
    3 | Variable name='x' readOnly=false
    4 | Call callee=(Id,"sqrt",#5) args=[(Num,"9",9)]
    5 | Function name='sqrt' paramCount=1 readOnly=true
-   6 | FunctionDeclaration fun=(Id,"f",#7) params=[(Id,"x",#8)] body=#9
+   6 | FunctionDeclaration fun=#7 params=[(Id,"x",#8)] body=#9
    7 | Function name='f' paramCount=1 readOnly=true
    8 | Variable name='x' readOnly=true
    9 | BinaryExpression op=(Sym,"*") left=(Num,"3",3) right=(Id,"x",#8)

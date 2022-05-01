@@ -54,18 +54,18 @@ export default function analyze(sourceCode) {
       // the declaration. That is, "let x=x;" should be an error (unless x
       // was already defined in an outer scope.)
       const initializerRep = initializer.rep()
-      const variable = id.rep()
-      variable.value = new core.Variable(variable.lexeme, false)
-      context.add(variable.lexeme, variable.value)
+      const idRep = id.rep()
+      const variable = new core.Variable(idRep.lexeme, false)
+      context.add(idRep.lexeme, variable)
       return new core.VariableDeclaration(variable, initializerRep)
     },
     Statement_fundec(_fun, id, _open, params, _close, _equals, body, _semicolon) {
-      const fun = id.rep()
+      const idRep = id.rep()
       const paramsRep = params.asIteration().rep()
-      fun.value = new core.Function(fun.lexeme, paramsRep.length, true)
+      const fun = new core.Function(idRep.lexeme, paramsRep.length, true)
       // Add the function to the context before analyzing the body, because
       // we want to allow functions to be recursive
-      context.add(fun.lexeme, fun.value)
+      context.add(idRep.lexeme, fun)
       context = new Context(context)
       for (const p of paramsRep) {
         let variable = new core.Variable(p.lexeme, true)

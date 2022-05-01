@@ -22,12 +22,10 @@ const optimizers = {
     return p
   },
   VariableDeclaration(d) {
-    d.variable = optimize(d.variable)
     d.initializer = optimize(d.initializer)
     return d
   },
   FunctionDeclaration(d) {
-    d.fun = optimize(d.fun)
     d.params = optimize(d.params)
     d.body = optimize(d.body)
     return d

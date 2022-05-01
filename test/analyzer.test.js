@@ -23,17 +23,17 @@ const source = `let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);
 const expected = `   1 | Program statements=[#2,#6,#10]
    2 | VariableDeclaration variable=#3 initializer=#4
    3 | Variable name='x' readOnly=false
-   4 | Call callee=(Id,"sqrt",#5) args=[(Num,"9",9)]
+   4 | Call callee=#5 args=[(Num,"9",9)]
    5 | Function name='sqrt' paramCount=1 readOnly=true
-   6 | FunctionDeclaration fun=#7 params=[(Id,"x",#8)] body=#9
+   6 | FunctionDeclaration fun=#7 params=[#8] body=#9
    7 | Function name='f' paramCount=1 readOnly=true
    8 | Variable name='x' readOnly=true
-   9 | BinaryExpression op=(Sym,"*") left=(Num,"3",3) right=(Id,"x",#8)
+   9 | BinaryExpression op=(Sym,"*") left=(Num,"3",3) right=#8
   10 | WhileStatement test=(Bool,"true",true) body=[#11,#12]
-  11 | Assignment target=(Id,"x",#3) source=(Num,"3",3)
+  11 | Assignment target=#3 source=(Num,"3",3)
   12 | PrintStatement argument=#13
   13 | Conditional test=(Num,"0",0) consequent=#14 alternate=(Num,"2",2)
-  14 | Call callee=(Id,"f",#7) args=[(Id,"x",#3)]`
+  14 | Call callee=#7 args=[#3]`
 
 describe("The analyzer", () => {
   for (const [scenario, source] of semanticChecks) {

@@ -25,14 +25,19 @@ const optimizers = {
     d.initializer = optimize(d.initializer)
     return d
   },
+  Variable(v) {
+    return v
+  },
   FunctionDeclaration(d) {
     d.params = optimize(d.params)
     d.body = optimize(d.body)
     return d
   },
+  Function(f) {
+    return f
+  },
   Assignment(s) {
     s.source = optimize(s.source)
-    s.target = optimize(s.target)
     if (s.source === s.target) {
       return null
     }

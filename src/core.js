@@ -71,8 +71,8 @@ export class UnaryExpression {
 // them here just for simple things like numbers and identifiers. The
 // Ohm node will go in the "source" property.
 export class Token {
-  constructor(category, source) {
-    Object.assign(this, { category, source })
+  constructor(category, source, value) {
+    Object.assign(this, { category, source, value })
   }
   get lexeme() {
     return this.source.contents
@@ -135,7 +135,9 @@ Program.prototype[util.inspect.custom] = function () {
     function view(e) {
       if (tags.has(e)) return `#${tags.get(e)}`
       if (e?.constructor === Token) {
-        return `(${e.category},"${e.lexeme}"${e.value ? "," + view(e.value) : ""})`
+        return `(${e.category},"${e.lexeme}"${
+          e.value !== undefined ? "," + view(e.value) : ""
+        })`
       }
       if (Array.isArray(e)) return `[${e.map(view)}]`
       return util.inspect(e)

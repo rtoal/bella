@@ -1,7 +1,3 @@
-// Semantic Analyzer
-//
-// Analyzes the AST by looking for semantic errors and resolving references.
-//
 // Semantic analysis is done with the help of a context object, which roughly
 // corresponds to lexical scopes in Bella. As Bella features static, nested
 // scopes, each context contains not only a mapping of locally declared
@@ -9,7 +5,12 @@
 // context. The root context, which contains the pre-declared identifiers and
 // any globals, has a parent of null.
 
-import { Variable, Function, standardLibrary, error } from "./core.js"
+import fs from "fs"
+import ohm from "ohm-js"
+import * as core from "./core.js"
+
+const error = core.error
+const bellaGrammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))
 
 class Context {
   constructor(parent = null) {
@@ -35,87 +36,126 @@ class Context {
     }
     return entity
   }
-  analyze(node) {
-    return this[node.constructor.name](node)
-  }
-  Program(p) {
-    this.analyze(p.statements)
-  }
-  VariableDeclaration(d) {
-    // Analyze the initializer *before* adding the variable to the context,
-    // because we don't want the variable to come into scope until after
-    // the declaration. That is, "let x=x;" should be an error (unless x
-    // was already defined in an outer scope.)
-    this.analyze(d.initializer)
-    d.variable.value = new Variable(d.variable.lexeme, false)
-    this.add(d.variable.lexeme, d.variable.value)
-  }
-  FunctionDeclaration(d) {
-    // Add the function to the context before analyzing the body, because
-    // we want to allow functions to be recursive
-    d.fun.value = new Function(d.fun.lexeme, d.params.length, true)
-    this.add(d.fun.lexeme, d.fun.value)
-    const newContext = new Context(this)
-    for (const p of d.params) {
-      let variable = new Variable(p.lexeme, true)
-      newContext.add(p.lexeme, variable)
-      p.value = variable
-    }
-    newContext.analyze(d.body)
-  }
-  Assignment(s) {
-    this.analyze(s.source)
-    this.analyze(s.target)
-    if (s.target.value.readOnly) {
-      error(`The identifier ${s.target.lexeme} is read only`, s.target)
-    }
-  }
-  WhileStatement(s) {
-    this.analyze(s.test)
-    this.analyze(s.body)
-  }
-  PrintStatement(s) {
-    this.analyze(s.argument)
-  }
-  Call(c) {
-    this.analyze(c.args)
-    c.callee.value = this.get(c.callee, Function)
-    const expectedParamCount = c.callee.value.paramCount
-    if (c.args.length !== expectedParamCount) {
-      error(`Expected ${expectedParamCount} arg(s), found ${c.args.length}`, c.callee)
-    }
-  }
-  Conditional(c) {
-    this.analyze(c.test)
-    this.analyze(c.consequent)
-    this.analyze(c.alternate)
-  }
-  BinaryExpression(e) {
-    this.analyze(e.left)
-    this.analyze(e.right)
-  }
-  UnaryExpression(e) {
-    this.analyze(e.operand)
-  }
-  Token(t) {
-    // Shortcut: only handle ids that are variables, not functions, here.
-    // We will handle the ids in function calls in the Call() handler. This
-    // strategy only works here, but in more complex languages, we would do
-    // proper type checking.
-    if (t.category === "Id") t.value = this.get(t, Variable)
-    if (t.category === "Num") t.value = Number(t.lexeme)
-    if (t.category === "Bool") t.value = t.lexeme === "true"
-  }
-  Array(a) {
-    a.forEach(item => this.analyze(item))
-  }
 }
 
-export default function analyze(programNode) {
-  const initialContext = new Context()
-  for (const [name, entity] of Object.entries(standardLibrary)) {
-    initialContext.add(name, entity)
+export default function analyze(sourceCode) {
+  let context = new Context()
+
+  const analyzer = bellaGrammar.createSemantics().addOperation("rep", {
+    Program(body) {
+      return new core.Program(body.rep())
+    },
+    Statement_vardec(_let, id, _eq, initializer, _semicolon) {
+      // Analyze the initializer *before* adding the variable to the context,
+      // because we don't want the variable to come into scope until after
+      // the declaration. That is, "let x=x;" should be an error (unless x
+      // was already defined in an outer scope.)
+      const initializerRep = initializer.rep()
+      const variable = id.rep()
+      variable.value = new core.Variable(variable.lexeme, false)
+      context.add(variable.lexeme, variable.value)
+      return new core.VariableDeclaration(variable, initializerRep)
+    },
+    Statement_fundec(_fun, id, _open, params, _close, _equals, body, _semicolon) {
+      const fun = id.rep()
+      const paramsRep = params.asIteration().rep()
+
+      // Add the function to the context before analyzing the body, because
+      // we want to allow functions to be recursive
+      fun.value = new core.Function(fun.lexeme, paramsRep.length, true)
+      context.add(fun.lexeme, fun.value)
+      context = new Context(context)
+      for (const p of paramsRep) {
+        let variable = new core.Variable(p.lexeme, true)
+        context.add(p.lexeme, variable)
+        p.value = variable
+      }
+      const bodyRep = body.rep()
+      context = context.parent
+      return new core.FunctionDeclaration(fun, paramsRep, bodyRep)
+    },
+    Statement_assign(id, _eq, expression, _semicolon) {
+      const target = id.rep()
+      if (target.value.readOnly) {
+        error(`The identifier ${target.lexeme} is read only`, target)
+      }
+      return new core.Assignment(target, expression.rep())
+    },
+    Statement_print(_print, argument, _semicolon) {
+      return new core.PrintStatement(argument.rep())
+    },
+    Statement_while(_while, test, body) {
+      return new core.WhileStatement(test.rep(), body.rep())
+    },
+    Block(_open, body, _close) {
+      return body.rep()
+    },
+    Exp_unary(op, operand) {
+      return new core.UnaryExpression(op.rep(), operand.rep())
+    },
+    Exp_ternary(test, _questionMark, consequent, _colon, alternate) {
+      return new core.Conditional(test.rep(), consequent.rep(), alternate.rep())
+    },
+    Exp1_binary(left, op, right) {
+      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+    },
+    Exp2_binary(left, op, right) {
+      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+    },
+    Exp3_binary(left, op, right) {
+      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+    },
+    Exp4_binary(left, op, right) {
+      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+    },
+    Exp5_binary(left, op, right) {
+      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+    },
+    Exp6_binary(left, op, right) {
+      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+    },
+    Exp7_parens(_open, expression, _close) {
+      return expression.rep()
+    },
+    Exp7_id(id) {
+      const idRep = id.rep()
+      idRep.value = context.get(idRep, core.Variable)
+      return idRep
+    },
+    Call(callee, _left, args, _right) {
+      const calleeRep = callee.rep()
+      const argsRep = args.asIteration().rep()
+      calleeRep.value = context.get(calleeRep, core.Function)
+      const expectedParamCount = calleeRep.value.paramCount
+      if (argsRep.length !== expectedParamCount) {
+        error(`Expected ${expectedParamCount} arg(s), found ${argsRep.length}`, calleeRep)
+      }
+      return new core.Call(calleeRep, argsRep)
+    },
+    id(_first, _rest) {
+      return new core.Token("Id", this.source)
+    },
+    true(_) {
+      return new core.Token("Bool", this.source, true)
+    },
+    false(_) {
+      return new core.Token("Bool", this.source, false)
+    },
+    num(_whole, _point, _fraction, _e, _sign, _exponent) {
+      return new core.Token("Num", this.source, Number(this.source.contents))
+    },
+    _terminal() {
+      return new core.Token("Sym", this.source)
+    },
+    _iter(...children) {
+      return children.map(child => child.rep())
+    },
+  })
+
+  for (const [name, entity] of Object.entries(core.standardLibrary)) {
+    context.add(name, entity)
   }
-  initialContext.analyze(programNode)
-  return programNode
+  const match = bellaGrammar.match(sourceCode)
+  if (!match.succeeded()) core.error(match.message)
+  return analyzer(match).rep()
 }

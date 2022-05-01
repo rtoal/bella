@@ -1,6 +1,5 @@
 import util from "util"
 import assert from "assert/strict"
-import ast from "../src/ast.js"
 import analyze from "../src/analyzer.js"
 
 const semanticChecks = [
@@ -33,21 +32,21 @@ const expected = `   1 | Program statements=[#2,#6,#10]
   10 | WhileStatement test=(Bool,"true",true) body=[#11,#12]
   11 | Assignment target=(Id,"x",#3) source=(Num,"3",3)
   12 | PrintStatement argument=#13
-  13 | Conditional test=(Num,"0") consequent=#14 alternate=(Num,"2",2)
+  13 | Conditional test=(Num,"0",0) consequent=#14 alternate=(Num,"2",2)
   14 | Call callee=(Id,"f",#7) args=[(Id,"x",#3)]`
 
 describe("The analyzer", () => {
   for (const [scenario, source] of semanticChecks) {
     it(`recognizes ${scenario}`, () => {
-      assert.ok(analyze(ast(source)))
+      assert.ok(analyze(source))
     })
   }
   for (const [scenario, source, errorMessagePattern] of semanticErrors) {
     it(`throws on ${scenario}`, () => {
-      assert.throws(() => analyze(ast(source)), errorMessagePattern)
+      assert.throws(() => analyze(source), errorMessagePattern)
     })
   }
   it(`produces the expected graph for the simple sample program`, () => {
-    assert.deepEqual(util.format(analyze(ast(source))), expected)
+    assert.deepEqual(util.format(analyze(source)), expected)
   })
 })

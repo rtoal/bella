@@ -9,8 +9,11 @@ import fs from "fs"
 import ohm from "ohm-js"
 import * as core from "./core.js"
 
-const error = core.error
 const bellaGrammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))
+
+function check(condition, message, token) {
+  if (!condition) core.error(message, token)
+}
 
 class Context {
   constructor(parent = null) {
@@ -18,9 +21,7 @@ class Context {
     this.locals = new Map()
   }
   add(name, entity) {
-    if (this.locals.has(name)) {
-      error(`The identifier ${name} has already been declared`)
-    }
+    check(!this.locals.has(name), `${name} has already been declared`)
     this.locals.set(name, entity)
     return entity
   }
@@ -30,10 +31,12 @@ class Context {
       entity = context.locals.get(token.lexeme)
       if (entity) break
     }
-    if (!entity) error(`Identifier ${token.lexeme} not declared`, token)
-    if (entity.constructor !== expectedType) {
-      error(`${token.lexeme} was expected to be a ${expectedType.name}`, token)
-    }
+    check(entity, `${token.lexeme} has not been declared`, token)
+    check(
+      entity.constructor === expectedType,
+      `${token.lexeme} was expected to be a ${expectedType.name}`,
+      token
+    )
     return entity
   }
 }
@@ -59,10 +62,9 @@ export default function analyze(sourceCode) {
     Statement_fundec(_fun, id, _open, params, _close, _equals, body, _semicolon) {
       const fun = id.rep()
       const paramsRep = params.asIteration().rep()
-
+      fun.value = new core.Function(fun.lexeme, paramsRep.length, true)
       // Add the function to the context before analyzing the body, because
       // we want to allow functions to be recursive
-      fun.value = new core.Function(fun.lexeme, paramsRep.length, true)
       context.add(fun.lexeme, fun.value)
       context = new Context(context)
       for (const p of paramsRep) {
@@ -76,9 +78,7 @@ export default function analyze(sourceCode) {
     },
     Statement_assign(id, _eq, expression, _semicolon) {
       const target = id.rep()
-      if (target.value.readOnly) {
-        error(`The identifier ${target.lexeme} is read only`, target)
-      }
+      check(!target.value.readOnly, `${target.lexeme} is read only`, target)
       return new core.Assignment(target, expression.rep())
     },
     Statement_print(_print, argument, _semicolon) {
@@ -127,9 +127,11 @@ export default function analyze(sourceCode) {
       const argsRep = args.asIteration().rep()
       calleeRep.value = context.get(calleeRep, core.Function)
       const expectedParamCount = calleeRep.value.paramCount
-      if (argsRep.length !== expectedParamCount) {
-        error(`Expected ${expectedParamCount} arg(s), found ${argsRep.length}`, calleeRep)
-      }
+      check(
+        argsRep.length === expectedParamCount,
+        `Expected ${expectedParamCount} arg(s), found ${argsRep.length}`,
+        calleeRep
+      )
       return new core.Call(calleeRep, argsRep)
     },
     id(_first, _rest) {

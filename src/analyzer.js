@@ -11,8 +11,16 @@ import * as core from "./core.js"
 
 const bellaGrammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))
 
-function check(condition, message, token) {
-  if (!condition) core.error(message, token)
+// Throw an error message that takes advantage of Ohm's messaging
+function error(message, node) {
+  if (node) {
+    throw new Error(`${node.source.getLineAndColumnMessage()}${message}`)
+  }
+  throw new Error(message)
+}
+
+function check(condition, message, node) {
+  if (!condition) error(message, node)
 }
 
 class Context {
@@ -20,26 +28,22 @@ class Context {
     this.parent = parent
     this.locals = new Map()
   }
-  add(token, entity) {
-    check(
-      !this.locals.has(token.lexeme),
-      `${token.lexeme} has already been declared`,
-      token
-    )
-    this.locals.set(token.lexeme, entity)
+  add(name, entity, node) {
+    check(!this.locals.has(name), `${name} has already been declared`, node)
+    this.locals.set(name, entity)
     return entity
   }
-  get(token, expectedType) {
+  get(name, expectedType, node) {
     let entity
     for (let context = this; context; context = context.parent) {
-      entity = context.locals.get(token.lexeme)
+      entity = context.locals.get(name)
       if (entity) break
     }
-    check(entity, `${token.lexeme} has not been declared`, token)
+    check(entity, `${name} has not been declared`, node)
     check(
       entity.constructor === expectedType,
-      `${token.lexeme} was expected to be a ${expectedType.name}`,
-      token
+      `${name} was expected to be a ${expectedType.name}`,
+      node
     )
     return entity
   }
@@ -58,22 +62,20 @@ export default function analyze(sourceCode) {
       // the declaration. That is, "let x=x;" should be an error (unless x
       // was already defined in an outer scope.)
       const initializerRep = initializer.rep()
-      const idRep = id.rep()
-      const variable = new core.Variable(idRep.lexeme, false)
-      context.add(idRep, variable)
+      const variable = new core.Variable(id.sourceString, false)
+      context.add(id.sourceString, variable, id)
       return new core.VariableDeclaration(variable, initializerRep)
     },
     Statement_fundec(_fun, id, _open, params, _close, _equals, body, _semicolon) {
-      const idRep = id.rep()
-      let paramsRep = params.asIteration().rep()
-      const fun = new core.Function(idRep.lexeme, paramsRep.length, true)
+      params = params.asIteration().children
+      const fun = new core.Function(id.sourceString, params.length, true)
       // Add the function to the context before analyzing the body, because
       // we want to allow functions to be recursive
-      context.add(idRep, fun)
+      context.add(id.sourceString, fun, id)
       context = new Context(context)
-      paramsRep = paramsRep.map(p => {
-        let variable = new core.Variable(p.lexeme, true)
-        context.add(p, variable)
+      const paramsRep = params.map(p => {
+        let variable = new core.Variable(p.sourceString, true)
+        context.add(p.sourceString, variable, p)
         return variable
       })
       const bodyRep = body.rep()
@@ -122,10 +124,10 @@ export default function analyze(sourceCode) {
       return expression.rep()
     },
     Exp7_id(id) {
-      return context.get(id.rep(), core.Variable)
+      return context.get(id.sourceString, core.Variable, id)
     },
     Call(callee, left, args, _right) {
-      const fun = context.get(callee.rep(), core.Function)
+      const fun = context.get(callee.rep().lexeme, core.Function, callee)
       const argsRep = args.asIteration().rep()
       check(
         argsRep.length === fun.paramCount,
@@ -135,7 +137,7 @@ export default function analyze(sourceCode) {
       return new core.Call(fun, argsRep)
     },
     id(_first, _rest) {
-      return new core.Token("Id", this.source)
+      return new core.Identifier(this.source.contents)
     },
     true(_) {
       return true
@@ -158,6 +160,6 @@ export default function analyze(sourceCode) {
     context.locals.set(name, entity)
   }
   const match = bellaGrammar.match(sourceCode)
-  if (!match.succeeded()) core.error(match.message)
+  if (!match.succeeded()) error(match.message)
   return analyzer(match).rep()
 }

@@ -67,15 +67,9 @@ export class UnaryExpression {
   }
 }
 
-// Token objects are wrappers around the Nodes produced by Ohm. We use
-// them here just for simple things like numbers and identifiers. The
-// Ohm node will go in the "source" property.
-export class Token {
-  constructor(category, source, value) {
-    Object.assign(this, { category, source, value })
-  }
-  get lexeme() {
-    return this.source.contents
+export class Identifier {
+  constructor(lexeme) {
+    Object.assign(this, { lexeme })
   }
 }
 
@@ -101,14 +95,6 @@ export const standardLibrary = Object.freeze({
   hypot: new Function("hypot", 2, true),
 })
 
-// Throw an error message that takes advantage of Ohm's messaging
-export function error(message, token) {
-  if (token) {
-    throw new Error(`${token.source.getLineAndColumnMessage()}${message}`)
-  }
-  throw new Error(message)
-}
-
 // Return a compact and pretty string representation of the node graph,
 // taking care of cycles. Written here from scratch because the built-in
 // inspect function, while nice, isn't nice enough. Defined properly in
@@ -119,26 +105,15 @@ Program.prototype[util.inspect.custom] = function () {
   // Attach a unique integer tag to every node
   function tag(node) {
     if (tags.has(node) || typeof node !== "object" || node === null) return
-    if (node.constructor === Token) {
-      // Tokens are not tagged themselves, but their values might be
-      tag(node?.value)
-    } else {
-      // Non-tokens are tagged
-      tags.set(node, tags.size + 1)
-      for (const child of Object.values(node)) {
-        Array.isArray(child) ? child.forEach(tag) : tag(child)
-      }
+    tags.set(node, tags.size + 1)
+    for (const child of Object.values(node)) {
+      Array.isArray(child) ? child.forEach(tag) : tag(child)
     }
   }
 
   function* lines() {
     function view(e) {
       if (tags.has(e)) return `#${tags.get(e)}`
-      if (e?.constructor === Token) {
-        return `(${e.category},"${e.lexeme}"${
-          e.value !== undefined ? "," + view(e.value) : ""
-        })`
-      }
       if (Array.isArray(e)) return `[${e.map(view)}]`
       return util.inspect(e)
     }

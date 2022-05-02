@@ -67,12 +67,6 @@ export class UnaryExpression {
   }
 }
 
-export class Identifier {
-  constructor(lexeme) {
-    Object.assign(this, { lexeme })
-  }
-}
-
 export class Variable {
   constructor(name, readOnly) {
     Object.assign(this, { name, readOnly })

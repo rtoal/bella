@@ -123,11 +123,8 @@ export default function analyze(sourceCode) {
     Exp7_parens(_open, expression, _close) {
       return expression.rep()
     },
-    Exp7_id(id) {
-      return context.get(id.sourceString, core.Variable, id)
-    },
     Call(callee, left, args, _right) {
-      const fun = context.get(callee.rep().lexeme, core.Function, callee)
+      const fun = context.get(callee.sourceString, core.Function, callee)
       const argsRep = args.asIteration().rep()
       check(
         argsRep.length === fun.paramCount,
@@ -137,7 +134,8 @@ export default function analyze(sourceCode) {
       return new core.Call(fun, argsRep)
     },
     id(_first, _rest) {
-      return new core.Identifier(this.source.contents)
+      // Designed to get here only for ids in expressions
+      return context.get(this.sourceString, core.Variable, this)
     },
     true(_) {
       return true

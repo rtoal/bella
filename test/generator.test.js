@@ -55,10 +55,10 @@ const fixtures = [
       print gcd(22, 33);
     `,
     expected: dedent`
-      function gcd_1([object Object], [object Object]) {
-        return (((y_2 == 0)) ? (x_3) : (gcd_1(y_2,(x_3 % y_2))));
+      function gcd_3(x_1, y_2) {
+        return (((y_2 == 0)) ? (x_1) : (gcd_3(y_2,(x_1 % y_2))));
       }
-      console.log(gcd_1(22,33));
+      console.log(gcd_3(22,33));
     `,
   },
   {

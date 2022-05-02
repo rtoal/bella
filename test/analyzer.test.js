@@ -18,7 +18,7 @@ const semanticErrors = [
   ["too many arguments", "print(sin(5, 10));", /Expected 1 arg\(s\), found 2/],
 ]
 
-const source = `let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}`
+const sample = `let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}`
 
 const expected = `   1 | Program statements=[#2,#6,#10]
    2 | VariableDeclaration variable=#3 initializer=#4
@@ -47,6 +47,6 @@ describe("The analyzer", () => {
     })
   }
   it(`produces the expected graph for the simple sample program`, () => {
-    assert.deepEqual(util.format(analyze(source)), expected)
+    assert.deepEqual(util.format(analyze(sample)), expected)
   })
 })

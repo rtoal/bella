@@ -43,5 +43,5 @@ Bella {
   num       = digit+ ("." digit+)? (("E" | "e") ("+" | "-")? digit+)?
   id        = ~keyword letter idchar*
   idchar    = letter | digit | "_"
-  space    += "//" (~"\n" any)* ("\n" | end)          -- comment
+  space    += "//" (~"\n" any)*                       -- comment
 }

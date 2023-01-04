@@ -144,10 +144,10 @@ export default function analyze(sourceCode) {
       return false
     },
     num(_whole, _point, _fraction, _e, _sign, _exponent) {
-      return Number(this.source.contents)
+      return Number(this.sourceString)
     },
     _terminal() {
-      return this.source.contents
+      return this.sourceString
     },
     _iter(...children) {
       return children.map(child => child.rep())

@@ -19,10 +19,11 @@
   },
   "homepage": "https://github.com/rtoal/bella#readme",
   "devDependencies": {
-    "c8": "^7.11.0",
-    "mocha": "^9.1.3"
+    "c8": "^7.13.0",
+    "mocha": "^10.2.0"
   },
   "dependencies": {
-    "ohm-js": "^16.2.0"
+    "graph-stringify": "^1.0.1",
+    "ohm-js": "^17.0.4"
   }
 }

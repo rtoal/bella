@@ -6,7 +6,7 @@
 // any globals, has a parent of null.
 
 import fs from "fs"
-import ohm from "ohm-js"
+import * as ohm from "ohm-js"
 import * as core from "./core.js"
 
 const bellaGrammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))

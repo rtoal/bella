@@ -1,13 +1,12 @@
-// Core classes and objects
-//
-// This module defines classes for the AST nodes. Only the constructors are
-// defined here. Semantic analysis methods, optimization methods, and code
-// generation are handled by other modules. This keeps the compiler organized
-// by phase.
+import util from "util"
+import stringify from "graph-stringify"
 
 export class Program {
   constructor(statements) {
     this.statements = statements
+  }
+  [util.inspect.custom]() {
+    return stringify(this)
   }
 }
 

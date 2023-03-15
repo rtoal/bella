@@ -1,6 +1,6 @@
 import assert from "assert/strict"
-import stringify from "graph-stringify"
 import analyze from "../src/analyzer.js"
+import * as core from "../src/core.js"
 
 const semanticChecks = [
   ["variables can be printed", "let x = 1; print x;"],
@@ -18,22 +18,7 @@ const semanticErrors = [
   ["too many arguments", "print(sin(5, 10));", /Expected 1 arg\(s\), found 2/],
 ]
 
-const sample = `let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}`
-
-const expected = `   1 | Program statements=[#2,#6,#10]
-   2 | VariableDeclaration variable=#3 initializer=#4
-   3 | Variable name='x' readOnly=false
-   4 | Call callee=#5 args=[9]
-   5 | Function name='sqrt' paramCount=1 readOnly=true
-   6 | FunctionDeclaration fun=#7 params=[#8] body=#9
-   7 | Function name='f' paramCount=1 readOnly=true
-   8 | Variable name='x' readOnly=true
-   9 | BinaryExpression op='*' left=3 right=#8
-  10 | WhileStatement test=true body=[#11,#12]
-  11 | Assignment target=#3 source=3
-  12 | PrintStatement argument=#13
-  13 | Conditional test=0 consequent=#14 alternate=2
-  14 | Call callee=#7 args=[#3]`
+const sample = "let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}"
 
 describe("The analyzer", () => {
   for (const [scenario, source] of semanticChecks) {
@@ -47,6 +32,24 @@ describe("The analyzer", () => {
     })
   }
   it(`produces the expected graph for the simple sample program`, () => {
-    assert.deepEqual(stringify(analyze(sample)), expected)
+    const program = analyze(sample)
+    let x = new core.Variable("x", false)
+    let f = new core.Function("f", 1, true)
+    let localX = new core.Variable("x", true)
+    assert.deepEqual(
+      program,
+      new core.Program([
+        new core.VariableDeclaration(x, new core.Call(core.standardLibrary.sqrt, [9])),
+        new core.FunctionDeclaration(
+          f,
+          [localX],
+          new core.BinaryExpression("*", 3, localX)
+        ),
+        new core.WhileStatement(true, [
+          new core.Assignment(x, 3),
+          new core.PrintStatement(new core.Conditional(0, new core.Call(f, [x]), 2)),
+        ]),
+      ])
+    )
   })
 })

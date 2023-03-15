@@ -1,5 +1,5 @@
-import util from "util"
 import assert from "assert/strict"
+import stringify from "graph-stringify"
 import analyze from "../src/analyzer.js"
 
 const semanticChecks = [
@@ -47,6 +47,6 @@ describe("The analyzer", () => {
     })
   }
   it(`produces the expected graph for the simple sample program`, () => {
-    assert.deepEqual(util.format(analyze(sample)), expected)
+    assert.deepEqual(stringify(analyze(sample)), expected)
   })
 })

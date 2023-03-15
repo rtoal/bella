@@ -5,15 +5,9 @@
 // generation are handled by other modules. This keeps the compiler organized
 // by phase.
 
-import util from "util"
-import stringify from "graph-stringify"
-
 export class Program {
   constructor(statements) {
     this.statements = statements
-  }
-  [util.inspect.custom]() {
-    return stringify(this)
   }
 }
 

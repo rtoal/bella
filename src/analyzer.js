@@ -53,48 +53,48 @@ export default function analyze(sourceCode) {
   let context = new Context()
 
   const analyzer = bellaGrammar.createSemantics().addOperation("rep", {
-    Program(body) {
-      return new core.Program(body.rep())
+    Program(statements) {
+      return new core.Program(statements.rep())
     },
-    Statement_vardec(_let, id, _eq, initializer, _semicolon) {
+    Statement_vardec(_let, id, _eq, exp, _semicolon) {
       // Analyze the initializer *before* adding the variable to the context,
       // because we don't want the variable to come into scope until after
       // the declaration. That is, "let x=x;" should be an error (unless x
       // was already defined in an outer scope.)
-      const initializerRep = initializer.rep()
+      const initializer = exp.rep()
       const variable = new core.Variable(id.sourceString, false)
       context.add(id.sourceString, variable, id)
-      return new core.VariableDeclaration(variable, initializerRep)
+      return new core.VariableDeclaration(variable, initializer)
     },
-    Statement_fundec(_fun, id, _open, params, _close, _equals, body, _semicolon) {
-      params = params.asIteration().children
-      const fun = new core.Function(id.sourceString, params.length, true)
+    Statement_fundec(_fun, id, _open, ids, _close, _equals, exp, _semicolon) {
+      ids = ids.asIteration().children
+      const fun = new core.Function(id.sourceString, ids.length, true)
       // Add the function to the context before analyzing the body, because
       // we want to allow functions to be recursive
       context.add(id.sourceString, fun, id)
       context = new Context(context)
-      const paramsRep = params.map(p => {
-        let variable = new core.Variable(p.sourceString, true)
-        context.add(p.sourceString, variable, p)
+      const params = ids.map(id => {
+        let variable = new core.Variable(id.sourceString, true)
+        context.add(id.sourceString, variable, id)
         return variable
       })
-      const bodyRep = body.rep()
+      const body = exp.rep()
       context = context.parent
-      return new core.FunctionDeclaration(fun, paramsRep, bodyRep)
+      return new core.FunctionDeclaration(fun, params, body)
     },
     Statement_assign(id, _eq, expression, _semicolon) {
       const target = id.rep()
       check(!target.readOnly, `${target.name} is read only`, id)
       return new core.Assignment(target, expression.rep())
     },
-    Statement_print(_print, argument, _semicolon) {
-      return new core.PrintStatement(argument.rep())
+    Statement_print(_print, expression, _semicolon) {
+      return new core.PrintStatement(expression.rep())
     },
-    Statement_while(_while, test, body) {
-      return new core.WhileStatement(test.rep(), body.rep())
+    Statement_while(_while, expression, block) {
+      return new core.WhileStatement(expression.rep(), block.rep())
     },
-    Block(_open, body, _close) {
-      return body.rep()
+    Block(_open, statements, _close) {
+      return statements.rep()
     },
     Exp_unary(op, operand) {
       return new core.UnaryExpression(op.rep(), operand.rep())
@@ -123,15 +123,15 @@ export default function analyze(sourceCode) {
     Exp7_parens(_open, expression, _close) {
       return expression.rep()
     },
-    Call(callee, left, args, _right) {
+    Call(callee, open, exps, _close) {
       const fun = context.get(callee.sourceString, core.Function, callee)
-      const argsRep = args.asIteration().rep()
+      const args = exps.asIteration().rep()
       check(
-        argsRep.length === fun.paramCount,
-        `Expected ${fun.paramCount} arg(s), found ${argsRep.length}`,
-        left
+        args.length === fun.paramCount,
+        `Expected ${fun.paramCount} arg(s), found ${args.length}`,
+        open
       )
-      return new core.Call(fun, argsRep)
+      return new core.Call(fun, args)
     },
     id(_first, _rest) {
       // Designed to get here only for ids in expressions

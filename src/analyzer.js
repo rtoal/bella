@@ -72,13 +72,15 @@ export default function analyze(sourceCode) {
       // Add the function to the context before analyzing the body, because
       // we want to allow functions to be recursive
       context.add(id.sourceString, fun, id)
+      // Analyze the parameters and the body inside a new context
       context = new Context(context)
       const params = ids.map(id => {
-        let variable = new core.Variable(id.sourceString, true)
-        context.add(id.sourceString, variable, id)
-        return variable
+        const param = new core.Variable(id.sourceString, true)
+        context.add(id.sourceString, param)
+        return param
       })
       const body = exp.rep()
+      // Restore previous context
       context = context.parent
       return new core.FunctionDeclaration(fun, params, body)
     },
@@ -123,15 +125,15 @@ export default function analyze(sourceCode) {
     Exp7_parens(_open, expression, _close) {
       return expression.rep()
     },
-    Call(callee, open, exps, _close) {
-      const fun = context.get(callee.sourceString, core.Function, callee)
+    Call(id, open, exps, _close) {
+      const callee = context.get(id.sourceString, core.Function, id)
       const args = exps.asIteration().rep()
       check(
-        args.length === fun.paramCount,
-        `Expected ${fun.paramCount} arg(s), found ${args.length}`,
+        args.length === callee.paramCount,
+        `Expected ${callee.paramCount} arg(s), found ${args.length}`,
         open
       )
-      return new core.Call(fun, args)
+      return new core.Call(callee, args)
     },
     id(_first, _rest) {
       // Designed to get here only for ids in expressions

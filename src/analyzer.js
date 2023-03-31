@@ -54,7 +54,7 @@ export default function analyze(sourceCode) {
 
   const analyzer = bellaGrammar.createSemantics().addOperation("rep", {
     Program(statements) {
-      return new core.Program(statements.rep())
+      return new core.Program(statements.children.map(s => s.rep()))
     },
     Statement_vardec(_let, id, _eq, exp, _semicolon) {
       // Analyze the initializer *before* adding the variable to the context,
@@ -96,7 +96,7 @@ export default function analyze(sourceCode) {
       return new core.WhileStatement(expression.rep(), block.rep())
     },
     Block(_open, statements, _close) {
-      return statements.rep()
+      return statements.children.map(s => s.rep())
     },
     Exp_unary(op, operand) {
       return new core.UnaryExpression(op.sourceString, operand.rep())
@@ -127,7 +127,7 @@ export default function analyze(sourceCode) {
     },
     Call(id, open, exps, _close) {
       const callee = context.get(id.sourceString, core.Function, id)
-      const args = exps.asIteration().rep()
+      const args = exps.asIteration().children.map(arg => arg.rep())
       check(
         args.length === callee.paramCount,
         `Expected ${callee.paramCount} arg(s), found ${args.length}`,
@@ -147,9 +147,6 @@ export default function analyze(sourceCode) {
     },
     num(_whole, _point, _fraction, _e, _sign, _exponent) {
       return Number(this.sourceString)
-    },
-    _iter(...children) {
-      return children.map(child => child.rep())
     },
   })
 

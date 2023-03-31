@@ -99,28 +99,28 @@ export default function analyze(sourceCode) {
       return statements.rep()
     },
     Exp_unary(op, operand) {
-      return new core.UnaryExpression(op.rep(), operand.rep())
+      return new core.UnaryExpression(op.sourceString, operand.rep())
     },
     Exp_ternary(test, _questionMark, consequent, _colon, alternate) {
       return new core.Conditional(test.rep(), consequent.rep(), alternate.rep())
     },
     Exp1_binary(left, op, right) {
-      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
     },
     Exp2_binary(left, op, right) {
-      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
     },
     Exp3_binary(left, op, right) {
-      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
     },
     Exp4_binary(left, op, right) {
-      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
     },
     Exp5_binary(left, op, right) {
-      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
     },
     Exp6_binary(left, op, right) {
-      return new core.BinaryExpression(op.rep(), left.rep(), right.rep())
+      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
     },
     Exp7_parens(_open, expression, _close) {
       return expression.rep()
@@ -147,9 +147,6 @@ export default function analyze(sourceCode) {
     },
     num(_whole, _point, _fraction, _e, _sign, _exponent) {
       return Number(this.sourceString)
-    },
-    _terminal() {
-      return this.sourceString
     },
     _iter(...children) {
       return children.map(child => child.rep())

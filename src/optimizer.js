@@ -1,4 +1,4 @@
-// Optimizer
+// OPTIMIZER
 //
 // This module exports a single function to perform machine-independent
 // optimizations on the analyzed semantic graph.

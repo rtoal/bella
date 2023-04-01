@@ -10,13 +10,13 @@ const semanticChecks = [
 ]
 
 const semanticErrors = [
-  ["using undeclared identifiers", "print(x);", /x has not been declared/],
+  ["using undeclared identifiers", "print(x);", /Identifier x not declared/],
   ["a variable used as function", "x = 1; x(2);", /Expected "="/],
-  ["a function used as variable", "print(sin + 1);", /expected/],
-  ["re-declared identifier", "let x = 1; let x = 2;", /x has already been declared/],
+  ["a function used as variable", "print(sin + 1);", /Functions can not appear here/],
+  ["re-declared identifier", "let x = 1; let x = 2;", /Identifier x already declared/],
   ["an attempt to write a read-only var", "π = 3;", /π is read only/],
-  ["too few arguments", "print(sin());", /Expected 1 arg\(s\), found 0/],
-  ["too many arguments", "print(sin(5, 10));", /Expected 1 arg\(s\), found 2/],
+  ["too few arguments", "print(sin());", /1 argument\(s\) required but 0 passed/],
+  ["too many arguments", "print(sin(5, 10));", /1 argument\(s\) required but 2 passed/],
 ]
 
 const sample = "let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}"

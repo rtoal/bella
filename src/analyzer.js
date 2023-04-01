@@ -6,16 +6,43 @@
 
 import * as core from "./core.js"
 
-// Throw an error message that takes advantage of Ohm's messaging
-function error(message, node) {
-  if (node) {
-    throw new Error(`${node.source.getLineAndColumnMessage()}${message}`)
+// The single gate for error checking. Pass in a condition that must be true.
+// Use errorLocation to give contextual information about the error that will
+// appear: this should be an object whose "at" property is a parse tree node.
+// Ohm's getLineAndColumnMessage will be used to prefix the error message.
+function must(condition, message, errorLocation) {
+  if (!condition) {
+    const prefix = errorLocation.at.source.getLineAndColumnMessage()
+    throw new Error(`${prefix}${message}`)
   }
-  throw new Error(message)
 }
 
-function check(condition, message, node) {
-  if (!condition) error(message, node)
+function mustNotAlreadyBeDeclared(context, name, at) {
+  must(!context.locals.has(name), `Identifier ${name} already declared`, at)
+}
+
+function mustHaveBeenFound(entity, name, at) {
+  must(entity, `Identifier ${name} not declared`, at)
+}
+
+function mustNotBeReadOnly(entity, at) {
+  must(!entity.readOnly, `${entity.name} is read only`, at)
+}
+
+function mustBeAVariable(entity, at) {
+  must(entity instanceof core.Variable, `Functions can not appear here`, at)
+}
+
+function mustBeAFunction(entity, at) {
+  must(entity instanceof core.Function, `${entity.name} is not a function`, at)
+}
+
+function mustHaveRightNumberOfArguments(argCount, paramCount, at) {
+  must(
+    argCount === paramCount,
+    `${paramCount} argument(s) required but ${argCount} passed`,
+    at
+  )
 }
 
 class Context {
@@ -23,24 +50,11 @@ class Context {
     this.parent = parent
     this.locals = new Map()
   }
-  add(name, entity, node) {
-    check(!this.locals.has(name), `${name} has already been declared`, node)
+  add(name, entity) {
     this.locals.set(name, entity)
-    return entity
   }
-  get(name, expectedType, node) {
-    let entity
-    for (let context = this; context; context = context.parent) {
-      entity = context.locals.get(name)
-      if (entity) break
-    }
-    check(entity, `${name} has not been declared`, node)
-    check(
-      entity.constructor === expectedType,
-      `${name} was expected to be a ${expectedType.name}`,
-      node
-    )
-    return entity
+  lookup(name, expectedType, at) {
+    return this.locals.get(name) || this.parent?.lookup(name)
   }
 }
 
@@ -58,6 +72,7 @@ export default function analyze(match) {
       // was already defined in an outer scope.)
       const initializer = exp.rep()
       const variable = new core.Variable(id.sourceString, false)
+      mustNotAlreadyBeDeclared(context, id.sourceString, { at: id })
       context.add(id.sourceString, variable, id)
       return new core.VariableDeclaration(variable, initializer)
     },
@@ -66,11 +81,13 @@ export default function analyze(match) {
       const fun = new core.Function(id.sourceString, ids.length, true)
       // Add the function to the context before analyzing the body, because
       // we want to allow functions to be recursive
-      context.add(id.sourceString, fun, id)
+      mustNotAlreadyBeDeclared(context, id.sourceString, { at: id })
+      context.add(id.sourceString, fun)
       // Analyze the parameters and the body inside a new context
       context = new Context(context)
       const params = ids.map(id => {
         const param = new core.Variable(id.sourceString, true)
+        mustNotAlreadyBeDeclared(context, id.sourceString, { at: id })
         context.add(id.sourceString, param)
         return param
       })
@@ -81,7 +98,7 @@ export default function analyze(match) {
     },
     Statement_assign(id, _eq, expression, _semicolon) {
       const target = id.rep()
-      check(!target.readOnly, `${target.name} is read only`, id)
+      mustNotBeReadOnly(target, { at: id })
       return new core.Assignment(target, expression.rep())
     },
     Statement_print(_print, expression, _semicolon) {
@@ -120,19 +137,20 @@ export default function analyze(match) {
     Exp7_parens(_open, expression, _close) {
       return expression.rep()
     },
-    Call(id, open, exps, _close) {
-      const callee = context.get(id.sourceString, core.Function, id)
+    Call(id, _open, exps, _close) {
+      const callee = context.lookup(id.sourceString, core.Function, id)
+      mustHaveBeenFound(callee, id.sourceString, { at: id })
+      mustBeAFunction(callee, { at: id })
       const args = exps.asIteration().children.map(arg => arg.rep())
-      check(
-        args.length === callee.paramCount,
-        `Expected ${callee.paramCount} arg(s), found ${args.length}`,
-        open
-      )
+      mustHaveRightNumberOfArguments(args.length, callee.paramCount, { at: id })
       return new core.Call(callee, args)
     },
-    id(_first, _rest) {
-      // Designed to get here only for ids in expressions
-      return context.get(this.sourceString, core.Variable, this)
+    Exp7_id(id) {
+      // ids used in expressions must have been already defined
+      const entity = context.lookup(this.sourceString, core.Variable, this)
+      mustHaveBeenFound(entity, id.sourceString, { at: id })
+      mustBeAVariable(entity, { at: id })
+      return entity
     },
     true(_) {
       return true

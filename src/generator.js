@@ -1,4 +1,4 @@
-// Code Generator Bella -> JavaScript
+// CODE GENERATOR
 //
 // Invoke generate(program) with the program node to get back the JavaScript
 // translation as a string.

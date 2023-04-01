@@ -2,7 +2,7 @@ Bella {
   Program   = Statement+
   Statement = let id "=" Exp ";"                      -- vardec
             | function id "(" Params ")" "=" Exp ";"  -- fundec
-            | id "=" Exp ";"                          -- assign
+            | Exp7_id "=" Exp ";"                     -- assign
             | print Exp ";"                           -- print
             | while Exp Block                         -- while
   Block     = "{" Statement* "}"

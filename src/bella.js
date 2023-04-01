@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
-import fs from "fs/promises"
-import process from "process"
+import * as fs from "node:fs/promises"
+import process from "node:process"
 import compile from "./compiler.js"
 import { Program } from "./core.js"
 import stringify from "graph-stringify"

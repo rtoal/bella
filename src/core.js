@@ -65,17 +65,17 @@ export class Variable {
 }
 
 export class Function {
-  constructor(name, paramCount, readOnly) {
-    Object.assign(this, { name, paramCount, readOnly })
+  constructor(name, paramCount) {
+    Object.assign(this, { name, paramCount })
   }
 }
 
 export const standardLibrary = Object.freeze({
   π: new Variable("π", true),
-  sqrt: new Function("sqrt", 1, true),
-  sin: new Function("sin", 1, true),
-  cos: new Function("cos", 1, true),
-  exp: new Function("exp", 1, true),
-  ln: new Function("ln", 1, true),
-  hypot: new Function("hypot", 2, true),
+  sqrt: new Function("sqrt", 1),
+  sin: new Function("sin", 1),
+  cos: new Function("cos", 1),
+  exp: new Function("exp", 1),
+  ln: new Function("ln", 1),
+  hypot: new Function("hypot", 2),
 })

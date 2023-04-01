@@ -35,7 +35,7 @@ describe("The analyzer", () => {
   it(`produces the expected graph for the simple sample program`, () => {
     const program = analyze(parse(sample))
     let x = new core.Variable("x", false)
-    let f = new core.Function("f", 1, true)
+    let f = new core.Function("f", 1)
     let localX = new core.Variable("x", true)
     assert.deepEqual(
       program,

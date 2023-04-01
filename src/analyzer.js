@@ -75,9 +75,9 @@ export default function analyze(match) {
       return new core.VariableDeclaration(variable, initializer)
     },
 
-    Statement_fundec(_fun, id, _open, ids, _close, _equals, exp, _semicolon) {
-      ids = ids.asIteration().children
-      const fun = new core.Function(id.sourceString, ids.length, true)
+    Statement_fundec(_fun, id, _open, idList, _close, _equals, exp, _semicolon) {
+      const ids = idList.asIteration().children
+      const fun = new core.Function(id.sourceString, ids.length)
       // Add the function to the context before analyzing the body, because
       // we want to allow functions to be recursive
       mustNotAlreadyBeDeclared(context, id.sourceString, { at: id })

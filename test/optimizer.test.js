@@ -13,7 +13,7 @@ const sqrt = core.standardLibrary.sqrt
 const call = (f, args) => new core.Call(f, args)
 const letXEq1 = new core.VariableDeclaration(x, 1)
 const print = e => new core.PrintStatement(e)
-const parameterless = name => new core.Function(name, 0, true)
+const parameterless = name => new core.Function(name, 0)
 const program = p => analyze(parse(p))
 const expression = e => program(`let x=1; print ${e};`).statements[1].argument
 

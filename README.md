@@ -54,10 +54,14 @@ while (true) {
   x = 3;
   print(0 ? f(x) : 2);
 }
+```
 
+```
 $ node src/bella.js examples/small.bella parsed
 Syntax is ok
+```
 
+```
 $ node src/bella.js examples/small.bella analyzed
    1 | Program statements=[#2,#6,#10]
    2 | VariableDeclaration variable=#3 initializer=#4
@@ -73,7 +77,9 @@ $ node src/bella.js examples/small.bella analyzed
   12 | PrintStatement argument=#13
   13 | Conditional test=0 consequent=#14 alternate=2
   14 | Call callee=#7 args=[#3]
+```
 
+```
 $ node src/bella.js examples/small.bella optimized
    1 | Program statements=[#2,#4,#8]
    2 | VariableDeclaration variable=#3 initializer=3
@@ -85,7 +91,9 @@ $ node src/bella.js examples/small.bella optimized
    8 | WhileStatement test=true body=[#9,#10]
    9 | Assignment target=#3 source=3
   10 | PrintStatement argument=2
+```
 
+```
 $ node src/bella.js examples/small.bella js
 let x_1 = 3;
 function f_3(x_2) {

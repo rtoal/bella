@@ -38,7 +38,7 @@ The `outputType` indicates what you wish to print to standard output:
 
 <table>
 <tr><th>Option</th><th>Description</th></tr>
-<tr><td>parser</td><td>A message saying the syntax is ok or that there is an error</td></tr>
+<tr><td>parsed</td><td>A message indicating the syntax is ok</td></tr>
 <tr><td>analyzed</td><td>The decorated AST</td></tr>
 <tr><td>optimized</td><td>The optimized decorated AST</td></tr>
 <tr><td>js</td><td>The translation of the program to JavaScript</td></tr>
@@ -105,10 +105,26 @@ console.log(2);
 }
 ```
 
+Errors are displayed with a little bit of context:
+
+```
+ node src/bella.js examples/bad.bella js
+Error: Line 2, col 20:
+  1 | let x = 5;
+> 2 | function f(x, y) = z + 1;
+                         ^
+  3 | print f(1, x);
+Identifier z not declared
+```
+
 ## Contributing
 
 I’m happy to take PRs. As usual, be nice when filing issues and contributing. Do remember the idea is to keep the language tiny; if you’d like to extend the language, you’re probably better forking into a new project. However, I would love to see any improvements you might have for the implementation or the pedagogy.
 
 Make sure to run `npm test` before submitting the PR.
+
+## Thanks
+
+This project uses [Ohm](https://ohmjs.org) for much of the front end. Ohm is maintained by [Patrick Dubroy](https://github.com/sponsors/pdubroy).
 
 ![GoodDog](https://raw.githubusercontent.com/rtoal/bella/main/docs/bella.jpg)

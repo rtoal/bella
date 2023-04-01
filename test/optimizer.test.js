@@ -11,10 +11,11 @@ const power = (x, y) => new core.BinaryExpression("**", x, y)
 const cond = (x, y, z) => new core.Conditional(x, y, z)
 const sqrt = core.standardLibrary.sqrt
 const call = (f, args) => new core.Call(f, args)
-
-function expression(e) {
-  return analyze(parse(`let x=1; print ${e};`)).statements[1].argument
-}
+const letXEq1 = new core.VariableDeclaration(x, 1)
+const print = e => new core.PrintStatement(e)
+const parameterless = name => new core.Function(name, 0, true)
+const program = p => analyze(parse(p))
+const expression = e => program(`let x=1; print ${e};`).statements[1].argument
 
 const tests = [
   ["folds +", expression("5 + 8"), 13],
@@ -52,17 +53,17 @@ const tests = [
   ["leaves nonoptimizable negations alone", expression("-x"), neg(x)],
   [
     "optimizes in function body",
-    analyze(parse("function f() = 1+1;")),
-    optimize(analyze(parse("function f() = 2;"))),
+    program("function f() = 1+1;"),
+    new core.Program([new core.FunctionDeclaration(parameterless("f"), [], 2)]),
   ],
   [
     "removes x=x",
-    analyze(parse("let x=1; x=x; print(x);")),
-    optimize(analyze(parse("let x=1; print(x);"))),
+    program("let x=1; x=x; print(x);"),
+    new core.Program([letXEq1, print(x)]),
   ],
   [
     "optimizes while test",
-    analyze(parse("while sqrt(25) {}")),
+    program("while sqrt(25) {}"),
     new core.Program([new core.WhileStatement(5, [])]),
   ],
 ]

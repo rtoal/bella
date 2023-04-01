@@ -1,6 +1,5 @@
 import assert from "assert/strict"
-import fs from "fs"
-import * as ohm from "ohm-js"
+import parse from "../src/parser.js"
 
 const syntaxChecks = [
   ["all numeric literal forms", "print(8 * 89.123);"],
@@ -29,18 +28,15 @@ const syntaxErrors = [
   ["an expression starting with a *", "x = * 71;", /Line 1, col 5/],
 ]
 
-describe("The grammar", () => {
-  const grammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))
+describe("The parser", () => {
   for (const [scenario, source] of syntaxChecks) {
     it(`properly specifies ${scenario}`, () => {
-      assert(grammar.match(source).succeeded())
+      assert(parse(source).succeeded())
     })
   }
   for (const [scenario, source, errorMessagePattern] of syntaxErrors) {
     it(`does not permit ${scenario}`, () => {
-      const match = grammar.match(source)
-      assert(!match.succeeded())
-      assert(new RegExp(errorMessagePattern).test(match.message))
+      assert.throws(() => parse(source), errorMessagePattern)
     })
   }
 })

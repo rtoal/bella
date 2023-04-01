@@ -1,12 +1,6 @@
-import util from "util"
-import stringify from "graph-stringify"
-
 export class Program {
   constructor(statements) {
     this.statements = statements
-  }
-  [util.inspect.custom]() {
-    return stringify(this)
   }
 }
 

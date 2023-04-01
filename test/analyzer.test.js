@@ -1,4 +1,5 @@
 import assert from "assert/strict"
+import parse from "../src/parser.js"
 import analyze from "../src/analyzer.js"
 import * as core from "../src/core.js"
 
@@ -21,18 +22,21 @@ const semanticErrors = [
 const sample = "let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}"
 
 describe("The analyzer", () => {
+  it("throws on syntax errors", () => {
+    assert.throws(() => analyze(parse("*(^%$")))
+  })
   for (const [scenario, source] of semanticChecks) {
     it(`recognizes ${scenario}`, () => {
-      assert.ok(analyze(source))
+      assert.ok(analyze(parse(source)))
     })
   }
   for (const [scenario, source, errorMessagePattern] of semanticErrors) {
     it(`throws on ${scenario}`, () => {
-      assert.throws(() => analyze(source), errorMessagePattern)
+      assert.throws(() => analyze(parse(source)), errorMessagePattern)
     })
   }
   it(`produces the expected graph for the simple sample program`, () => {
-    const program = analyze(sample)
+    const program = analyze(parse(sample))
     let x = new core.Variable("x", false)
     let f = new core.Function("f", 1, true)
     let localX = new core.Variable("x", true)

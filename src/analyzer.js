@@ -1,15 +1,10 @@
-// Semantic analysis is done with the help of a context object, which roughly
-// corresponds to lexical scopes in Bella. As Bella features static, nested
-// scopes, each context contains not only a mapping of locally declared
-// identifiers to their entities, but also a pointer to the static parent
-// context. The root context, which contains the pre-declared identifiers and
-// any globals, has a parent of null.
+// ANALYZER
+//
+// The analyze() function takes the grammar match object (the CST) from Ohm
+// and produces a decorated Abstract Syntax "Tree" (technically a graph) that
+// includes all entities including those from the standard library.
 
-import fs from "fs"
-import * as ohm from "ohm-js"
 import * as core from "./core.js"
-
-const bellaGrammar = ohm.grammar(fs.readFileSync("src/bella.ohm"))
 
 // Throw an error message that takes advantage of Ohm's messaging
 function error(message, node) {
@@ -49,10 +44,10 @@ class Context {
   }
 }
 
-export default function analyze(sourceCode) {
+export default function analyze(match) {
   let context = new Context()
 
-  const analyzer = bellaGrammar.createSemantics().addOperation("rep", {
+  const analyzer = match.matcher.grammar.createSemantics().addOperation("rep", {
     Program(statements) {
       return new core.Program(statements.children.map(s => s.rep()))
     },
@@ -150,10 +145,11 @@ export default function analyze(sourceCode) {
     },
   })
 
-  for (const [name, entity] of Object.entries(core.standardLibrary)) {
-    context.locals.set(name, entity)
+  // Analysis starts here. First load up the initial context with entities
+  // from the standard library. Then do the analysis using the semantics
+  // object created above.
+  for (const [name, type] of Object.entries(core.standardLibrary)) {
+    context.add(name, type)
   }
-  const match = bellaGrammar.match(sourceCode)
-  if (!match.succeeded()) error(match.message)
   return analyzer(match).rep()
 }

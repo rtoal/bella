@@ -16,7 +16,7 @@ while (dozen >= 3 || (gcd(1, 10) != 5)) {
 
 ## Language Specification
 
-The language is specified at its [home page](http://localhost/~ray/notes/bella/).
+The language is specified at its [home page](http://cs.lmu.edu/~ray/notes/bella/).
 
 ## Building
 
@@ -38,7 +38,7 @@ The `outputType` indicates what you wish to print to standard output:
 
 <table>
 <tr><th>Option</th><th>Description</th></tr>
-<tr><td>ast</td><td>The AST</td></tr>
+<tr><td>parser</td><td>A message saying the syntax is ok or that there is an error</td></tr>
 <tr><td>analyzed</td><td>The decorated AST</td></tr>
 <tr><td>optimized</td><td>The optimized decorated AST</td></tr>
 <tr><td>js</td><td>The translation of the program to JavaScript</td></tr>
@@ -47,35 +47,54 @@ The `outputType` indicates what you wish to print to standard output:
 Example runs:
 
 ```
-$ cat ~/hi.bella
-let good_dog = 100;
-print(exp(100) - 0);
+$ cat examples/small.bella
+let x = sqrt(9);
+function f(x) = 3 * x;
+while (true) {
+  x = 3;
+  print(0 ? f(x) : 2);
+}
 
-$ node src/bella.js ~/hi.bella ast
-   1 | Program statements=[#2,#3]
-   2 | VariableDeclaration id=Id("good_dog") initializer=Num("100")
-   3 | PrintStatement argument=#4
-   4 | BinaryExpression op=Sym("-") left=#5 right=Num("0")
-   5 | Call callee=Id("exp") args=[Num("100")]
+$ node src/bella.js examples/small.bella parsed
+Syntax is ok
 
-$ node src/bella.js ~/hi.bella analyzed
-   1 | Program statements=[#2,#4]
-   2 | VariableDeclaration id=Id("good_dog") initializer=Num("100",100) variable=#3
-   3 | Variable name='good_dog' readOnly=false
-   4 | PrintStatement argument=#5
-   5 | BinaryExpression op=Sym("-") left=#6 right=Num("0")
-   6 | Call callee=Id("exp",#7) args=[Num("100",100)]
-   7 | Function name='exp' paramCount=1 readOnly=true
+$ node src/bella.js examples/small.bella analyzed
+   1 | Program statements=[#2,#6,#10]
+   2 | VariableDeclaration variable=#3 initializer=#4
+   3 | Variable name='x' readOnly=false
+   4 | Call callee=#5 args=[9]
+   5 | Function name='sqrt' paramCount=1
+   6 | FunctionDeclaration fun=#7 params=[#8] body=#9
+   7 | Function name='f' paramCount=1
+   8 | Variable name='x' readOnly=true
+   9 | BinaryExpression op='*' left=3 right=#8
+  10 | WhileStatement test=true body=[#11,#12]
+  11 | Assignment target=#3 source=3
+  12 | PrintStatement argument=#13
+  13 | Conditional test=0 consequent=#14 alternate=2
+  14 | Call callee=#7 args=[#3]
 
-$ node src/bella.js ~/hi.bella optimized
-   1 | Program statements=[#2,#4]
-   2 | VariableDeclaration id='good_dog' initializer=100 variable=#3
-   3 | Variable name='good_dog' readOnly=false
-   4 | PrintStatement argument=2.6881171418161356e+43
+$ node src/bella.js examples/small.bella optimized
+   1 | Program statements=[#2,#4,#8]
+   2 | VariableDeclaration variable=#3 initializer=3
+   3 | Variable name='x' readOnly=false
+   4 | FunctionDeclaration fun=#5 params=[#6] body=#7
+   5 | Function name='f' paramCount=1
+   6 | Variable name='x' readOnly=true
+   7 | BinaryExpression op='*' left=3 right=#6
+   8 | WhileStatement test=true body=[#9,#10]
+   9 | Assignment target=#3 source=3
+  10 | PrintStatement argument=2
 
-$ node src/bella.js ~/hi.bella js
-let good_dog_1 = 100;
-console.log(2.6881171418161356e+43);
+$ node src/bella.js examples/small.bella js
+let x_1 = 3;
+function f_3(x_2) {
+return (3 * x_2);
+}
+while (true) {
+x_1 = 3;
+console.log(2);
+}
 ```
 
 ## Contributing

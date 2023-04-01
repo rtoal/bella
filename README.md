@@ -127,4 +127,6 @@ Make sure to run `npm test` before submitting the PR.
 
 This project uses [Ohm](https://ohmjs.org) for much of the front end. Ohm is maintained by [Patrick Dubroy](https://github.com/sponsors/pdubroy).
 
+Marco Berardini chose the language name and took this picture of Bella:
+
 ![GoodDog](https://raw.githubusercontent.com/rtoal/bella/main/docs/bella.jpg)

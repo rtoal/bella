@@ -38,22 +38,19 @@ function mustBeAFunction(entity, at) {
 }
 
 function mustHaveRightNumberOfArguments(argCount, paramCount, at) {
-  must(
-    argCount === paramCount,
-    `${paramCount} argument(s) required but ${argCount} passed`,
-    at
-  )
+  const message = `${paramCount} argument(s) required but ${argCount} passed`
+  must(argCount === paramCount, message, at)
 }
 
 class Context {
-  constructor(parent = null) {
+  constructor(parent) {
     this.parent = parent
     this.locals = new Map()
   }
   add(name, entity) {
     this.locals.set(name, entity)
   }
-  lookup(name, expectedType, at) {
+  lookup(name) {
     return this.locals.get(name) || this.parent?.lookup(name)
   }
 }
@@ -65,6 +62,7 @@ export default function analyze(match) {
     Program(statements) {
       return new core.Program(statements.children.map(s => s.rep()))
     },
+
     Statement_vardec(_let, id, _eq, exp, _semicolon) {
       // Analyze the initializer *before* adding the variable to the context,
       // because we don't want the variable to come into scope until after
@@ -76,6 +74,7 @@ export default function analyze(match) {
       context.add(id.sourceString, variable, id)
       return new core.VariableDeclaration(variable, initializer)
     },
+
     Statement_fundec(_fun, id, _open, ids, _close, _equals, exp, _semicolon) {
       ids = ids.asIteration().children
       const fun = new core.Function(id.sourceString, ids.length, true)
@@ -96,47 +95,61 @@ export default function analyze(match) {
       context = context.parent
       return new core.FunctionDeclaration(fun, params, body)
     },
-    Statement_assign(id, _eq, expression, _semicolon) {
+
+    Statement_assign(id, _eq, exp, _semicolon) {
       const target = id.rep()
       mustNotBeReadOnly(target, { at: id })
-      return new core.Assignment(target, expression.rep())
+      return new core.Assignment(target, exp.rep())
     },
-    Statement_print(_print, expression, _semicolon) {
-      return new core.PrintStatement(expression.rep())
+
+    Statement_print(_print, exp, _semicolon) {
+      return new core.PrintStatement(exp.rep())
     },
-    Statement_while(_while, expression, block) {
-      return new core.WhileStatement(expression.rep(), block.rep())
+
+    Statement_while(_while, exp, block) {
+      return new core.WhileStatement(exp.rep(), block.rep())
     },
+
     Block(_open, statements, _close) {
       return statements.children.map(s => s.rep())
     },
-    Exp_unary(op, operand) {
-      return new core.UnaryExpression(op.sourceString, operand.rep())
+
+    Exp_unary(op, exp) {
+      return new core.UnaryExpression(op.sourceString, exp.rep())
     },
-    Exp_ternary(test, _questionMark, consequent, _colon, alternate) {
-      return new core.Conditional(test.rep(), consequent.rep(), alternate.rep())
+
+    Exp_ternary(exp1, _questionMark, exp2, _colon, exp3) {
+      return new core.Conditional(exp1.rep(), exp2.rep(), exp3.rep())
     },
-    Exp1_binary(left, op, right) {
-      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
+
+    Exp1_binary(exp1, op, exp2) {
+      return new core.BinaryExpression(op.sourceString, exp1.rep(), exp2.rep())
     },
-    Exp2_binary(left, op, right) {
-      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
+
+    Exp2_binary(exp1, op, exp2) {
+      return new core.BinaryExpression(op.sourceString, exp1.rep(), exp2.rep())
     },
-    Exp3_binary(left, op, right) {
-      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
+
+    Exp3_binary(exp1, op, exp2) {
+      return new core.BinaryExpression(op.sourceString, exp1.rep(), exp2.rep())
     },
-    Exp4_binary(left, op, right) {
-      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
+
+    Exp4_binary(exp1, op, exp2) {
+      return new core.BinaryExpression(op.sourceString, exp1.rep(), exp2.rep())
     },
-    Exp5_binary(left, op, right) {
-      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
+
+    Exp5_binary(exp1, op, exp2) {
+      return new core.BinaryExpression(op.sourceString, exp1.rep(), exp2.rep())
     },
-    Exp6_binary(left, op, right) {
-      return new core.BinaryExpression(op.sourceString, left.rep(), right.rep())
+
+    Exp6_binary(exp1, op, exp2) {
+      return new core.BinaryExpression(op.sourceString, exp1.rep(), exp2.rep())
     },
-    Exp7_parens(_open, expression, _close) {
-      return expression.rep()
+
+    Exp7_parens(_open, exp, _close) {
+      return exp.rep()
     },
+
     Call(id, _open, exps, _close) {
       const callee = context.lookup(id.sourceString, core.Function, id)
       mustHaveBeenFound(callee, id.sourceString, { at: id })
@@ -145,6 +158,7 @@ export default function analyze(match) {
       mustHaveRightNumberOfArguments(args.length, callee.paramCount, { at: id })
       return new core.Call(callee, args)
     },
+
     Exp7_id(id) {
       // ids used in expressions must have been already defined
       const entity = context.lookup(this.sourceString, core.Variable, this)
@@ -152,12 +166,15 @@ export default function analyze(match) {
       mustBeAVariable(entity, { at: id })
       return entity
     },
+
     true(_) {
       return true
     },
+
     false(_) {
       return false
     },
+
     num(_whole, _point, _fraction, _e, _sign, _exponent) {
       return Number(this.sourceString)
     },

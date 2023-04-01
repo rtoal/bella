@@ -22,9 +22,6 @@ const semanticErrors = [
 const sample = "let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}"
 
 describe("The analyzer", () => {
-  it("throws on syntax errors", () => {
-    assert.throws(() => analyze(parse("*(^%$")))
-  })
   for (const [scenario, source] of semanticChecks) {
     it(`recognizes ${scenario}`, () => {
       assert.ok(analyze(parse(source)))

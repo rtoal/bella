@@ -1,1 +1,6 @@
-let x=sqrt(9);function f(x)=3*x;while(true){x=3;print(0?f(x):2);}
+let x = sqrt(9);
+function f(x) = 3 * x;
+while (true) {
+  x = 3;
+  print(0 ? f(x) : 2);
+}

@@ -77,22 +77,18 @@ export default function analyze(match) {
     },
 
     Statement_fundec(_fun, id, parameters, _equals, exp, _semicolon) {
-      const childContext = new Context(context)
-
-      // Parameters are part of the child context
-      context = childContext
-      const params = parameters.rep()
-      context = context.parent
-
-      // Add the function to the context before analyzing the body, because
-      // we want to allow recursive functions. It's okay that we analyzed the
-      // parameters already, since their names can shadow the function name.
-      const fun = new core.Function(id.sourceString, params.length)
+      // Start by adding a new function object to this context. We won't
+      // have the number of params yet; that will come later. But we have
+      // to get the function in the context right way, to allow recursion.
+      const fun = new core.Function(id.sourceString)
       mustNotHaveBeDeclared(id.sourceString, { at: id })
       context.add(id.sourceString, fun)
 
-      // Analyze body in the child context
-      context = childContext
+      // Add the params and body to the child context, updating the
+      // function object with the parameter count once we have it.
+      context = new Context(context)
+      const params = parameters.rep()
+      fun.paramCount = params.length
       const body = exp.rep()
       context = context.parent
 

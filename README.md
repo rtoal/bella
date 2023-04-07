@@ -16,7 +16,7 @@ while (dozen >= 3 || (gcd(1, 10) != 5)) {
 
 ## Language Specification
 
-The language is specified at its [home page](http://cs.lmu.edu/~ray/notes/bella/).
+The language is specified at its [home page](https://cs.lmu.edu/~ray/notes/bella/).
 
 ## Building
 

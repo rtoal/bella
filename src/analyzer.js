@@ -17,31 +17,6 @@ function must(condition, message, errorLocation) {
   }
 }
 
-function mustNotAlreadyBeDeclared(context, name, at) {
-  must(!context.locals.has(name), `Identifier ${name} already declared`, at)
-}
-
-function mustHaveBeenFound(entity, name, at) {
-  must(entity, `Identifier ${name} not declared`, at)
-}
-
-function mustNotBeReadOnly(entity, at) {
-  must(!entity.readOnly, `${entity.name} is read only`, at)
-}
-
-function mustBeAVariable(entity, at) {
-  must(entity instanceof core.Variable, `Functions can not appear here`, at)
-}
-
-function mustBeAFunction(entity, at) {
-  must(entity instanceof core.Function, `${entity.name} is not a function`, at)
-}
-
-function mustHaveRightNumberOfArguments(argCount, paramCount, at) {
-  const message = `${paramCount} argument(s) required but ${argCount} passed`
-  must(argCount === paramCount, message, at)
-}
-
 class Context {
   constructor(parent) {
     this.parent = parent
@@ -58,6 +33,31 @@ class Context {
 export default function analyze(match) {
   let context = new Context()
 
+  function mustNotHaveBeDeclared(name, at) {
+    must(!context.locals.has(name), `Identifier ${name} already declared`, at)
+  }
+
+  function mustHaveBeenFound(entity, name, at) {
+    must(entity, `Identifier ${name} not declared`, at)
+  }
+
+  function mustNotBeReadOnly(entity, at) {
+    must(!entity.readOnly, `${entity.name} is read only`, at)
+  }
+
+  function mustBeAVariable(entity, at) {
+    must(entity instanceof core.Variable, `Functions can not appear here`, at)
+  }
+
+  function mustBeAFunction(entity, at) {
+    must(entity instanceof core.Function, `${entity.name} is not a function`, at)
+  }
+
+  function mustHaveRightNumberOfArguments(argCount, paramCount, at) {
+    const message = `${paramCount} argument(s) required but ${argCount} passed`
+    must(argCount === paramCount, message, at)
+  }
+
   const analyzer = match.matcher.grammar.createSemantics().addOperation("rep", {
     Program(statements) {
       return new core.Program(statements.children.map(s => s.rep()))
@@ -70,30 +70,39 @@ export default function analyze(match) {
       // was already defined in an outer scope.)
       const initializer = exp.rep()
       const variable = new core.Variable(id.sourceString, false)
-      mustNotAlreadyBeDeclared(context, id.sourceString, { at: id })
-      context.add(id.sourceString, variable, id)
+      mustNotHaveBeDeclared(id.sourceString, { at: id })
+      context.add(id.sourceString, variable)
       return new core.VariableDeclaration(variable, initializer)
     },
 
-    Statement_fundec(_fun, id, _open, idList, _close, _equals, exp, _semicolon) {
-      const ids = idList.asIteration().children
-      const fun = new core.Function(id.sourceString, ids.length)
+    Statement_fundec(_fun, id, parameters, _equals, exp, _semicolon) {
+      const childContext = new Context(context)
+      context = childContext
+      const params = parameters.rep()
+      context = context.parent
+
       // Add the function to the context before analyzing the body, because
-      // we want to allow functions to be recursive
-      mustNotAlreadyBeDeclared(context, id.sourceString, { at: id })
+      // we want to allow recursive functions. It's okay that we analyzed the
+      // parameters already, since their names can shadow the function name.
+      const fun = new core.Function(id.sourceString, params.length)
+      mustNotHaveBeDeclared(id.sourceString, { at: id })
       context.add(id.sourceString, fun)
-      // Analyze the parameters and the body inside a new context
-      context = new Context(context)
-      const params = ids.map(id => {
+
+      // Analyze body in the child context
+      context = childContext
+      const body = exp.rep()
+      context = context.parent
+
+      return new core.FunctionDeclaration(fun, params, body)
+    },
+
+    Params(_open, idList, _close) {
+      return idList.asIteration().children.map(id => {
         const param = new core.Variable(id.sourceString, true)
-        mustNotAlreadyBeDeclared(context, id.sourceString, { at: id })
+        mustNotHaveBeDeclared(id.sourceString, { at: id })
         context.add(id.sourceString, param)
         return param
       })
-      const body = exp.rep()
-      // Restore previous context
-      context = context.parent
-      return new core.FunctionDeclaration(fun, params, body)
     },
 
     Statement_assign(id, _eq, exp, _semicolon) {

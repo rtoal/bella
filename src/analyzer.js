@@ -46,6 +46,7 @@ export default function analyze(match) {
   }
 
   function mustBeAVariable(entity, at) {
+    // Bella has two kinds of entities: variables and functions.
     must(entity instanceof core.Variable, `Functions can not appear here`, at)
   }
 
@@ -77,6 +78,8 @@ export default function analyze(match) {
 
     Statement_fundec(_fun, id, parameters, _equals, exp, _semicolon) {
       const childContext = new Context(context)
+
+      // Parameters are part of the child context
       context = childContext
       const params = parameters.rep()
       context = context.parent
@@ -99,6 +102,7 @@ export default function analyze(match) {
     Params(_open, idList, _close) {
       return idList.asIteration().children.map(id => {
         const param = new core.Variable(id.sourceString, true)
+        // Check that they are all unique
         mustNotHaveBeDeclared(id.sourceString, { at: id })
         context.add(id.sourceString, param)
         return param
@@ -159,18 +163,21 @@ export default function analyze(match) {
       return exp.rep()
     },
 
-    Call(id, _open, exps, _close) {
-      const callee = context.lookup(id.sourceString, core.Function, id)
+    Call(id, _open, expList, _close) {
+      // ids used in calls must have already been declared and must be
+      // bound to function entities, not to variable entities.
+      const callee = context.lookup(id.sourceString)
       mustHaveBeenFound(callee, id.sourceString, { at: id })
       mustBeAFunction(callee, { at: id })
-      const args = exps.asIteration().children.map(arg => arg.rep())
+      const args = expList.asIteration().children.map(arg => arg.rep())
       mustHaveRightNumberOfArguments(args.length, callee.paramCount, { at: id })
       return new core.Call(callee, args)
     },
 
     Exp7_id(id) {
-      // ids used in expressions must have been already defined
-      const entity = context.lookup(this.sourceString, core.Variable, this)
+      // ids used in expressions must have been already declared and must
+      // be bound to variable entities, not function entities.
+      const entity = context.lookup(id.sourceString)
       mustHaveBeenFound(entity, id.sourceString, { at: id })
       mustBeAVariable(entity, { at: id })
       return entity

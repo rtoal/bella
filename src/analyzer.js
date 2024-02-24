@@ -28,30 +28,36 @@ class Context {
   lookup(name) {
     return this.locals.get(name) || this.parent?.lookup(name)
   }
-  checkNotDeclared(name, at) {
-    must(!this.locals.has(name), `Identifier ${name} already declared`, at)
-  }
-  checkIsFound(entity, name, at) {
-    must(entity, `Identifier ${name} not declared`, at)
-  }
-  checkIsVariable(entity, at) {
-    // Bella has two kinds of entities: variables and functions.
-    must(entity?.kind === "Variable", `Functions can not appear here`, at)
-  }
-  checkIsFunction(entity, at) {
-    must(entity?.kind === "Function", `${entity.name} is not a function`, at)
-  }
-  checkNotReadOnly(entity, at) {
-    must(!entity.readOnly, `${entity.name} is read only`, at)
-  }
-  checkArgumentCount(argCount, paramCount, at) {
-    const equalCount = argCount === paramCount
-    must(equalCount, `${paramCount} argument(s) required but ${argCount} passed`, at)
-  }
 }
 
 export default function analyze(match) {
   let context = new Context()
+
+  function mustNotAlreadyBeDeclared(name, at) {
+    must(!context.locals.has(name), `Identifier ${name} already declared`, at)
+  }
+
+  function mustHaveBeenFound(entity, name, at) {
+    must(entity, `Identifier ${name} not declared`, at)
+  }
+
+  function mustBeAVariable(entity, at) {
+    // Bella has two kinds of entities: variables and functions.
+    must(entity?.kind === "Variable", `Functions can not appear here`, at)
+  }
+
+  function mustBeAFunction(entity, at) {
+    must(entity?.kind === "Function", `${entity.name} is not a function`, at)
+  }
+
+  function mustNotBeReadOnly(entity, at) {
+    must(!entity.readOnly, `${entity.name} is read only`, at)
+  }
+
+  function mustHaveCorrectArgumentCount(argCount, paramCount, at) {
+    const equalCount = argCount === paramCount
+    must(equalCount, `${paramCount} argument(s) required but ${argCount} passed`, at)
+  }
 
   const analyzer = match.matcher.grammar.createSemantics().addOperation("rep", {
     Program(statements) {
@@ -65,7 +71,7 @@ export default function analyze(match) {
       // was already defined in an outer scope.)
       const initializer = exp.rep()
       const variable = core.variable(id.sourceString, false)
-      context.checkNotDeclared(id.sourceString, { at: id })
+      mustNotAlreadyBeDeclared(id.sourceString, { at: id })
       context.add(id.sourceString, variable)
       return core.variableDeclaration(variable, initializer)
     },
@@ -75,7 +81,7 @@ export default function analyze(match) {
       // have the number of params yet; that will come later. But we have
       // to get the function in the context right way, to allow recursion.
       const fun = core.fun(id.sourceString)
-      context.checkNotDeclared(id.sourceString, { at: id })
+      mustNotAlreadyBeDeclared(id.sourceString, { at: id })
       context.add(id.sourceString, fun)
 
       // Add the params and body to the child context, updating the
@@ -94,7 +100,7 @@ export default function analyze(match) {
       return idList.asIteration().children.map(id => {
         const param = core.variable(id.sourceString, true)
         // All of the parameters have to be unique
-        context.checkNotDeclared(id.sourceString, { at: id })
+        mustNotAlreadyBeDeclared(id.sourceString, { at: id })
         context.add(id.sourceString, param)
         return param
       })
@@ -102,7 +108,7 @@ export default function analyze(match) {
 
     Statement_assign(id, _eq, exp, _semicolon) {
       const target = id.rep()
-      context.checkNotReadOnly(target, { at: id })
+      mustNotBeReadOnly(target, { at: id })
       return core.assignment(target, exp.rep())
     },
 
@@ -158,10 +164,10 @@ export default function analyze(match) {
       // ids used in calls must have already been declared and must be
       // bound to function entities, not to variable entities.
       const callee = context.lookup(id.sourceString)
-      context.checkIsFound(callee, id.sourceString, { at: id })
-      context.checkIsFunction(callee, { at: id })
+      mustHaveBeenFound(callee, id.sourceString, { at: id })
+      mustBeAFunction(callee, { at: id })
       const args = expList.asIteration().children.map(arg => arg.rep())
-      context.checkArgumentCount(args.length, callee.paramCount, { at: id })
+      mustHaveCorrectArgumentCount(args.length, callee.paramCount, { at: id })
       return core.call(callee, args)
     },
 
@@ -169,8 +175,8 @@ export default function analyze(match) {
       // ids used in expressions must have been already declared and must
       // be bound to variable entities, not function entities.
       const entity = context.lookup(id.sourceString)
-      context.checkIsFound(entity, id.sourceString, { at: id })
-      context.checkIsVariable(entity, { at: id })
+      mustHaveBeenFound(entity, id.sourceString, { at: id })
+      mustBeAVariable(entity, { at: id })
       return entity
     },
 

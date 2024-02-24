@@ -36,7 +36,7 @@ const optimizers = {
   },
   WhileStatement(s) {
     s.test = optimize(s.test)
-    s.body = optimize(s.body)
+    s.body = s.body.flatMap(optimize)
     return s
   },
   PrintStatement(s) {

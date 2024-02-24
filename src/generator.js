@@ -21,11 +21,11 @@ export default function generate(program) {
     }
   })(new Map())
 
-  const gen = node => generators[node.constructor.name](node)
+  const gen = node => generators?.[node?.kind]?.(node) ?? node
 
   const generators = {
     Program(p) {
-      gen(p.statements)
+      p.statements.forEach(gen)
     },
     VariableDeclaration(d) {
       output.push(`let ${targetName(d.variable)} = ${gen(d.initializer)};`)
@@ -60,11 +60,11 @@ export default function generate(program) {
     },
     WhileStatement(s) {
       output.push(`while (${gen(s.test)}) {`)
-      gen(s.body)
+      s.body.forEach(gen)
       output.push("}")
     },
     Call(c) {
-      const args = gen(c.args)
+      const args = c.args.map(gen)
       const callee = gen(c.callee)
       return `${callee}(${args.join(",")})`
     },
@@ -76,15 +76,6 @@ export default function generate(program) {
     },
     UnaryExpression(e) {
       return `${e.op}(${gen(e.operand)})`
-    },
-    Number(e) {
-      return e
-    },
-    Boolean(e) {
-      return e
-    },
-    Array(a) {
-      return a.map(gen)
     },
   }
 

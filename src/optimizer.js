@@ -1,7 +1,5 @@
-// OPTIMIZER
-//
-// This module exports a single function to perform machine-independent
-// optimizations on the analyzed semantic graph.
+// The optimizer module exports a single function, optimize, to perform
+// machine-independent optimizations on the analyzed semantic representation.
 //
 // The only optimizations supported here are:
 //
@@ -10,36 +8,29 @@
 //   - some strength reductions (+0, -0, *0, *1, etc.)
 //   - Conditionals with constant tests collapse into a single arm
 
-import { UnaryExpression } from "./core.js"
+import { unary } from "./core.js"
 
 export default function optimize(node) {
-  return optimizers[node.constructor.name](node)
+  return optimizers?.[node.kind]?.(node) ?? node
 }
 
 const optimizers = {
   Program(p) {
-    p.statements = optimize(p.statements)
+    p.statements = p.statements.flatMap(optimize)
     return p
   },
   VariableDeclaration(d) {
     d.initializer = optimize(d.initializer)
     return d
   },
-  Variable(v) {
-    return v
-  },
   FunctionDeclaration(d) {
-    d.params = optimize(d.params)
     d.body = optimize(d.body)
     return d
-  },
-  Function(f) {
-    return f
   },
   Assignment(s) {
     s.source = optimize(s.source)
     if (s.source === s.target) {
-      return null
+      return []
     }
     return s
   },
@@ -54,7 +45,7 @@ const optimizers = {
   },
   Call(c) {
     c.callee = optimize(c.callee)
-    c.args = optimize(c.args)
+    c.args = c.args.map(optimize)
     if (c.args.length === 1 && c.args[0].constructor === Number) {
       if (c.callee.name === "sqrt") return Math.sqrt(c.args[0])
       if (c.callee.name === "sin") return Math.sin(c.args[0])
@@ -96,7 +87,7 @@ const optimizers = {
       } else if (e.left === 1 && e.op === "*") {
         return e.right
       } else if (e.left === 0 && e.op === "-") {
-        return new UnaryExpression("-", e.right)
+        return unary("-", e.right)
       } else if (e.left === 0 && ["*", "/", "%"].includes(e.op)) {
         return 0
       } else if (e.op === "**" && e.left === 1) {
@@ -123,15 +114,5 @@ const optimizers = {
       }
     }
     return e
-  },
-  Number(n) {
-    return n
-  },
-  Boolean(b) {
-    return b
-  },
-  Array(a) {
-    // Optimizing arrays involves flattening an removing nulls
-    return a.flatMap(optimize).filter(s => s !== null)
   },
 }

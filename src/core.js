@@ -1,81 +1,57 @@
-export class Program {
-  constructor(statements) {
-    this.statements = statements
-  }
+export function program(statements) {
+  return { kind: "Program", statements }
 }
 
-export class VariableDeclaration {
-  constructor(variable, initializer) {
-    Object.assign(this, { variable, initializer })
-  }
+export function variableDeclaration(variable, initializer) {
+  return { kind: "VariableDeclaration", variable, initializer }
 }
 
-export class FunctionDeclaration {
-  constructor(fun, params, body) {
-    Object.assign(this, { fun, params, body })
-  }
+export function functionDeclaration(fun, params, body) {
+  return { kind: "FunctionDeclaration", fun, params, body }
 }
 
-export class Assignment {
-  constructor(target, source) {
-    Object.assign(this, { target, source })
-  }
+export function assignment(target, source) {
+  return { kind: "Assignment", target, source }
 }
 
-export class WhileStatement {
-  constructor(test, body) {
-    Object.assign(this, { test, body })
-  }
+export function whileStatement(test, body) {
+  return { kind: "WhileStatement", test, body }
 }
 
-export class PrintStatement {
-  constructor(argument) {
-    Object.assign(this, { argument })
-  }
+export function printStatement(argument) {
+  return { kind: "PrintStatement", argument }
 }
 
-export class Call {
-  constructor(callee, args) {
-    Object.assign(this, { callee, args })
-  }
+export function call(callee, args) {
+  return { kind: "Call", callee, args }
 }
 
-export class Conditional {
-  constructor(test, consequent, alternate) {
-    Object.assign(this, { test, consequent, alternate })
-  }
+export function conditional(test, consequent, alternate) {
+  return { kind: "Conditional", test, consequent, alternate }
 }
 
-export class BinaryExpression {
-  constructor(op, left, right) {
-    Object.assign(this, { op, left, right })
-  }
+export function binary(op, left, right) {
+  return { kind: "BinaryExpression", op, left, right }
 }
 
-export class UnaryExpression {
-  constructor(op, operand) {
-    Object.assign(this, { op, operand })
-  }
+export function unary(op, operand) {
+  return { kind: "UnaryExpression", op, operand }
 }
 
-export class Variable {
-  constructor(name, readOnly) {
-    Object.assign(this, { name, readOnly })
-  }
+export function variable(name, readOnly) {
+  return { kind: "Variable", name, readOnly }
 }
 
-export class Function {
-  constructor(name, paramCount) {
-    Object.assign(this, { name, paramCount })
-  }
+export function fun(name, paramCount) {
+  return { kind: "Function", name, paramCount }
 }
 
 export const standardLibrary = Object.freeze({
-  π: new Variable("π", true),
-  sqrt: new Function("sqrt", 1),
-  sin: new Function("sin", 1),
-  cos: new Function("cos", 1),
-  exp: new Function("exp", 1),
-  ln: new Function("ln", 1),
-  hypot: new Function("hypot", 2),
+  π: variable("π", true),
+  sqrt: fun("sqrt", 1),
+  sin: fun("sin", 1),
+  cos: fun("cos", 1),
+  exp: fun("exp", 1),
+  ln: fun("ln", 1),
+  hypot: fun("hypot", 2),
 })

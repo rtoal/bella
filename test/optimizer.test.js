@@ -5,15 +5,15 @@ import optimize from "../src/optimizer.js"
 import * as core from "../src/core.js"
 
 // Make some test cases easier to read
-const x = new core.Variable("x", false)
-const neg = x => new core.UnaryExpression("-", x)
-const power = (x, y) => new core.BinaryExpression("**", x, y)
-const cond = (x, y, z) => new core.Conditional(x, y, z)
+const x = core.variable("x", false)
+const neg = x => core.unary("-", x)
+const power = (x, y) => core.binary("**", x, y)
+const cond = (x, y, z) => core.conditional(x, y, z)
 const sqrt = core.standardLibrary.sqrt
-const call = (f, args) => new core.Call(f, args)
-const letXEq1 = new core.VariableDeclaration(x, 1)
-const print = e => new core.PrintStatement(e)
-const parameterless = name => new core.Function(name, 0)
+const call = (f, args) => core.call(f, args)
+const letXEq1 = core.variableDeclaration(x, 1)
+const print = e => core.printStatement(e)
+const parameterless = name => core.fun(name, 0)
 const program = p => analyze(parse(p))
 const expression = e => program(`let x=1; print ${e};`).statements[1].argument
 
@@ -54,17 +54,13 @@ const tests = [
   [
     "optimizes in function body",
     program("function f() = 1+1;"),
-    new core.Program([new core.FunctionDeclaration(parameterless("f"), [], 2)]),
+    core.program([core.functionDeclaration(parameterless("f"), [], 2)]),
   ],
-  [
-    "removes x=x",
-    program("let x=1; x=x; print(x);"),
-    new core.Program([letXEq1, print(x)]),
-  ],
+  ["removes x=x", program("let x=1; x=x; print(x);"), core.program([letXEq1, print(x)])],
   [
     "optimizes while test",
     program("while sqrt(25) {}"),
-    new core.Program([new core.WhileStatement(5, [])]),
+    core.program([core.whileStatement(5, [])]),
   ],
 ]
 

@@ -1,7 +1,5 @@
-// PARSER
-//
 // The parse() function uses Ohm to produce a match object for a given
-// source code program, using the grammar in the bella.ohm.
+// source code program, using the grammar in the file bella.ohm.
 
 import * as fs from "node:fs"
 import * as ohm from "ohm-js"

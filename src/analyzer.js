@@ -1,7 +1,8 @@
-// The semantic analyzer exports a single function, analyze(), that takes a
-// grammar match object (the CST) from Ohm and produces a decorated Abstract
-// Syntax "Tree" (technically a graph) that includes all entities including
-// those from the standard library.
+// The semantic analyzer exports a single function, analyze(match), that
+// accepts a grammar match object (the CST) from Ohm and produces the
+// internal representation of the program (pretty close to what is usually
+// called the AST). This representation also includes entities from the
+// standard library, as needed.
 
 import * as core from "./core.js"
 

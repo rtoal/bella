@@ -1,4 +1,4 @@
-// The optimizer module exports a single function, optimize, to perform
+// The optimizer module exports a single function, optimize(node), to perform
 // machine-independent optimizations on the analyzed semantic representation.
 //
 // The only optimizations supported here are:

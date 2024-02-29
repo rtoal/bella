@@ -5,6 +5,9 @@
 import { standardLibrary } from "./core.js"
 
 export default function generate(program) {
+  // When generating code for statements, we'll accumulate the lines of
+  // the target code here. When we finish generating, we'll join the lines
+  // with newlines and return the result.
   const output = []
 
   // Variable names in JS will be suffixed with _1, _2, _3, etc. This is
@@ -23,6 +26,8 @@ export default function generate(program) {
   const gen = node => generators?.[node?.kind]?.(node) ?? node
 
   const generators = {
+    // Key idea: when generating an expression, just return the JS string; when
+    // generating a statement, write lines of translated JS to the output array.
     Program(p) {
       p.statements.forEach(gen)
     },

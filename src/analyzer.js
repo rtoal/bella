@@ -6,21 +6,10 @@
 
 import * as core from "./core.js"
 
-// The single gate for error checking. Pass in a condition that must be true.
-// Use errorLocation to give contextual information about the error that will
-// appear: this should be an object whose "at" property is a parse tree node.
-// Ohm's getLineAndColumnMessage will be used to prefix the error message.
-function must(condition, message, errorLocation) {
-  if (!condition) {
-    const prefix = errorLocation.at.source.getLineAndColumnMessage()
-    throw new Error(`${prefix}${message}`)
-  }
-}
-
 class Context {
-  constructor(parent) {
+  constructor({ parent, locals = {} }) {
     this.parent = parent
-    this.locals = new Map()
+    this.locals = new Map(Object.entries(locals))
   }
   add(name, entity) {
     this.locals.set(name, entity)
@@ -31,7 +20,23 @@ class Context {
 }
 
 export default function analyze(match) {
-  let context = new Context()
+  // Track the context manually via a simple variable. The initial context
+  // contains the mappings from the standard library. Add to this context
+  // as necessary. When needing to descent into a new scope, create a new
+  // context with the current context as its parent. When leaving a scope,
+  // reset this variable to the parent context.
+  let context = new Context({ locals: core.standardLibrary })
+
+  // The single gate for error checking. Pass in a condition that must be true.
+  // Use errorLocation to give contextual information about the error that will
+  // appear: this should be an object whose "at" property is a parse tree node.
+  // Ohm's getLineAndColumnMessage will be used to prefix the error message.
+  function must(condition, message, errorLocation) {
+    if (!condition) {
+      const prefix = errorLocation.at.source.getLineAndColumnMessage()
+      throw new Error(`${prefix}${message}`)
+    }
+  }
 
   function mustNotAlreadyBeDeclared(name, at) {
     must(!context.locals.has(name), `Identifier ${name} already declared`, at)
@@ -59,7 +64,7 @@ export default function analyze(match) {
     must(equalCount, `${paramCount} argument(s) required but ${argCount} passed`, at)
   }
 
-  const analyzer = match.matcher.grammar.createSemantics().addOperation("rep", {
+  const builder = match.matcher.grammar.createSemantics().addOperation("rep", {
     Program(statements) {
       return core.program(statements.children.map(s => s.rep()))
     },
@@ -86,7 +91,7 @@ export default function analyze(match) {
 
       // Add the params and body to the child context, updating the
       // function object with the parameter count once we have it.
-      context = new Context(context)
+      context = new Context({ parent: context })
       const params = parameters.rep()
       fun.paramCount = params.length
       const body = exp.rep()
@@ -193,11 +198,5 @@ export default function analyze(match) {
     },
   })
 
-  // Analysis starts here. First load up the initial context with entities
-  // from the standard library. Then do the analysis using the semantics
-  // object created above.
-  for (const [name, type] of Object.entries(core.standardLibrary)) {
-    context.add(name, type)
-  }
-  return analyzer(match).rep()
+  return builder(match).rep()
 }

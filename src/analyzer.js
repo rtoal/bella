@@ -165,7 +165,7 @@ export default function analyze(match) {
       return exp.rep()
     },
 
-    Call(id, _open, expList, _close) {
+    Exp7_call(id, _open, expList, _close) {
       // ids used in calls must have already been declared and must be
       // bound to function entities, not to variable entities.
       const callee = context.lookup(id.sourceString)

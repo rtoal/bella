@@ -5,7 +5,7 @@
   "type": "module",
   "main": "bella.js",
   "scripts": {
-    "test": "c8 node_modules/.bin/mocha"
+    "test": "c8 node --test test/**/*.js"
   },
   "repository": {
     "type": "git",

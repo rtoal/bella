@@ -1,3 +1,4 @@
+import { describe, it } from "node:test"
 import assert from "node:assert/strict"
 import parse from "../src/parser.js"
 import analyze from "../src/analyzer.js"
@@ -5,7 +6,7 @@ import optimize from "../src/optimizer.js"
 import * as core from "../src/core.js"
 
 // Make some test cases easier to read
-const x = core.variable("x", false)
+const x = core.variable("x", true)
 const neg = x => core.unary("-", x)
 const power = (x, y) => core.binary("**", x, y)
 const cond = (x, y, z) => core.conditional(x, y, z)

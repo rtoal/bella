@@ -55,8 +55,8 @@ export default function analyze(match) {
     must(entity?.kind === "Function", `${entity.name} is not a function`, at)
   }
 
-  function mustNotBeReadOnly(entity, at) {
-    must(!entity.readOnly, `${entity.name} is read only`, at)
+  function mustBeMutable(entity, at) {
+    must(entity.mutable, `${entity.name} is read only`, at)
   }
 
   function mustHaveCorrectArgumentCount(argCount, paramCount, at) {
@@ -75,7 +75,7 @@ export default function analyze(match) {
       // the declaration. That is, "let x=x;" should be an error (unless x
       // was already defined in an outer scope.)
       const initializer = exp.rep()
-      const variable = core.variable(id.sourceString, false)
+      const variable = core.variable(id.sourceString, true)
       mustNotAlreadyBeDeclared(id.sourceString, { at: id })
       context.add(id.sourceString, variable)
       return core.variableDeclaration(variable, initializer)
@@ -103,7 +103,7 @@ export default function analyze(match) {
 
     Params(_open, idList, _close) {
       return idList.asIteration().children.map(id => {
-        const param = core.variable(id.sourceString, true)
+        const param = core.variable(id.sourceString, false)
         // All of the parameters have to be unique
         mustNotAlreadyBeDeclared(id.sourceString, { at: id })
         context.add(id.sourceString, param)
@@ -113,7 +113,7 @@ export default function analyze(match) {
 
     Statement_assign(id, _eq, exp, _semicolon) {
       const target = id.rep()
-      mustNotBeReadOnly(target, { at: id })
+      mustBeMutable(target, { at: id })
       return core.assignment(target, exp.rep())
     },
 

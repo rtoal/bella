@@ -38,8 +38,8 @@ export function unary(op, operand) {
   return { kind: "UnaryExpression", op, operand }
 }
 
-export function variable(name, readOnly) {
-  return { kind: "Variable", name, readOnly }
+export function variable(name, mutable) {
+  return { kind: "Variable", name, mutable }
 }
 
 export function fun(name, paramCount) {
@@ -47,7 +47,7 @@ export function fun(name, paramCount) {
 }
 
 export const standardLibrary = Object.freeze({
-  π: variable("π", true),
+  π: variable("π", false),
   sqrt: fun("sqrt", 1),
   sin: fun("sin", 1),
   cos: fun("cos", 1),

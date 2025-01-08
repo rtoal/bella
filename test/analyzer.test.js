@@ -1,3 +1,4 @@
+import { describe, it } from "node:test"
 import assert from "node:assert/strict"
 import parse from "../src/parser.js"
 import analyze from "../src/analyzer.js"
@@ -34,9 +35,9 @@ describe("The analyzer", () => {
   }
   it(`produces the expected graph for the simple sample program`, () => {
     const program = analyze(parse(sample))
-    let x = core.variable("x", false)
+    let x = core.variable("x", true)
     let f = core.fun("f", 1)
-    let localX = core.variable("x", true)
+    let localX = core.variable("x", false)
     assert.deepEqual(
       program,
       core.program([

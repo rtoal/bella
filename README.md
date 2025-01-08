@@ -65,12 +65,12 @@ Syntax is ok
 $ node src/bella.js examples/small.bella analyzed
    1 | Program statements=[#2,#6,#10]
    2 | VariableDeclaration variable=#3 initializer=#4
-   3 | Variable name='x' readOnly=false
+   3 | Variable name='x' mutable=true
    4 | Call callee=#5 args=[9]
    5 | Function name='sqrt' paramCount=1
    6 | FunctionDeclaration fun=#7 params=[#8] body=#9
    7 | Function name='f' paramCount=1
-   8 | Variable name='x' readOnly=true
+   8 | Variable name='x' mutable=false
    9 | BinaryExpression op='*' left=3 right=#8
   10 | WhileStatement test=true body=[#11,#12]
   11 | Assignment target=#3 source=3
@@ -83,10 +83,10 @@ $ node src/bella.js examples/small.bella analyzed
 $ node src/bella.js examples/small.bella optimized
    1 | Program statements=[#2,#4,#8]
    2 | VariableDeclaration variable=#3 initializer=3
-   3 | Variable name='x' readOnly=false
+   3 | Variable name='x' mutable=true
    4 | FunctionDeclaration fun=#5 params=[#6] body=#7
    5 | Function name='f' paramCount=1
-   6 | Variable name='x' readOnly=true
+   6 | Variable name='x' mutable=false
    7 | BinaryExpression op='*' left=3 right=#6
    8 | WhileStatement test=true body=[#9,#10]
    9 | Assignment target=#3 source=3

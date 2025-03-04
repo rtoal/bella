@@ -2,7 +2,7 @@
 
 # Bella
 
-A simple programming language, used for a compiler course.
+A simple programming language, designed for and used in a compiler course.
 
 ```
 let dozen = 12;
@@ -85,13 +85,14 @@ $ node src/bella.js examples/small.bella optimized
    1 | Program statements=[#2,#4,#8]
    2 | VariableDeclaration variable=#3 initializer=3
    3 | Variable name='x' mutable=true
-   4 | FunctionDeclaration fun=#5 params=[#6] body=#7
-   5 | Function name='f' paramCount=1
+   4 | FunctionDeclaration fun=#5
+   5 | Function name='f' params=[#6] body=#7
    6 | Variable name='x' mutable=false
    7 | BinaryExpression op='*' left=3 right=#6
    8 | WhileStatement test=true body=[#9,#10]
    9 | Assignment target=#3 source=3
-  10 | PrintStatement argument=2
+  10 | PrintStatement argument=#11
+  11 | Call callee=#5 args=[#3]
 ```
 
 ```

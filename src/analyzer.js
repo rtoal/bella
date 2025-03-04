@@ -76,17 +76,17 @@ export default function analyze(match) {
       // because we don't want the variable to come into scope until after
       // the declaration. That is, "let x=x;" should be an error (unless x
       // was already defined in an outer scope.)
+      mustNotAlreadyBeDeclared(id.sourceString, { at: id })
       const initializer = exp.rep()
       const variable = core.variable(id.sourceString, true)
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id })
       context.add(id.sourceString, variable)
       return core.variableDeclaration(variable, initializer)
     },
 
     Statement_fundec(_fun, id, parameters, _equals, exp, _semicolon) {
       // Add new function object to the context right away to allow recursion.
-      const fun = core.fun(id.sourceString)
       mustNotAlreadyBeDeclared(id.sourceString, { at: id })
+      const fun = core.fun(id.sourceString)
       context.add(id.sourceString, fun)
 
       // The params and body must be analyzed in a new context.

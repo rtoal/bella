@@ -63,20 +63,21 @@ Syntax is ok
 
 ```
 $ node src/bella.js examples/small.bella analyzed
-   1 | Program statements=[#2,#6,#10]
+   1 | Program statements=[#2,#7,#11]
    2 | VariableDeclaration variable=#3 initializer=#4
    3 | Variable name='x' mutable=true
    4 | Call callee=#5 args=[9]
-   5 | Function name='sqrt' paramCount=1
-   6 | FunctionDeclaration fun=#7 params=[#8] body=#9
-   7 | Function name='f' paramCount=1
-   8 | Variable name='x' mutable=false
-   9 | BinaryExpression op='*' left=3 right=#8
-  10 | WhileStatement test=true body=[#11,#12]
-  11 | Assignment target=#3 source=3
-  12 | PrintStatement argument=#13
-  13 | Conditional test=0 consequent=#14 alternate=2
-  14 | Call callee=#7 args=[#3]
+   5 | Function name='sqrt' params=[#6]
+   6 | Variable name='x' mutable=false
+   7 | FunctionDeclaration fun=#8
+   8 | Function name='f' params=[#9] body=#10
+   9 | Variable name='x' mutable=false
+  10 | BinaryExpression op='*' left=3 right=#9
+  11 | WhileStatement test=true body=[#12,#13]
+  12 | Assignment target=#3 source=3
+  13 | PrintStatement argument=#14
+  14 | Conditional test=2 consequent=#15 alternate=2
+  15 | Call callee=#8 args=[#3]
 ```
 
 ```

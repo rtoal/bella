@@ -18,6 +18,10 @@ export function fun(name, params, body) {
   return { kind: "Function", name, params, body }
 }
 
+export function intrinsicFunction(name, params) {
+  return { kind: "Function", name, params }
+}
+
 export function assignment(target, source) {
   return { kind: "Assignment", target, source }
 }
@@ -48,10 +52,10 @@ export function unary(op, operand) {
 
 export const standardLibrary = Object.freeze({
   π: variable("π", false),
-  sqrt: fun("sqrt", [variable("x")]),
-  sin: fun("sin", [variable("x")]),
-  cos: fun("cos", [variable("x")]),
-  exp: fun("exp", [variable("x")]),
-  ln: fun("ln", [variable("x")]),
-  hypot: fun("hypot", [variable("x"), variable("y")]),
+  sqrt: intrinsicFunction("sqrt", [variable("x")]),
+  sin: intrinsicFunction("sin", [variable("x")]),
+  cos: intrinsicFunction("cos", [variable("x")]),
+  exp: intrinsicFunction("exp", [variable("x")]),
+  ln: intrinsicFunction("ln", [variable("x")]),
+  hypot: intrinsicFunction("hypot", [variable("x"), variable("y")]),
 })

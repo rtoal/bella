@@ -28,7 +28,7 @@ const optimizers = {
     return d
   },
   Function(f) {
-    f.body = optimize(f.body)
+    if (f.body) f.body = optimize(f.body)
     return f
   },
   Assignment(s) {

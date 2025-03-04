@@ -14,7 +14,7 @@ const sqrt = core.standardLibrary.sqrt
 const call = (f, args) => core.call(f, args)
 const letXEq1 = core.variableDeclaration(x, 1)
 const print = e => core.printStatement(e)
-const parameterless = name => core.fun(name, 0)
+const parameterless = (name, body) => core.fun(name, [], body)
 const program = p => analyze(parse(p))
 const expression = e => program(`let x=1; print ${e};`).statements[1].argument
 
@@ -55,7 +55,7 @@ const tests = [
   [
     "optimizes in function body",
     program("function f() = 1+1;"),
-    core.program([core.functionDeclaration(parameterless("f"), [], 2)]),
+    core.program([core.functionDeclaration(parameterless("f", 2))]),
   ],
   ["removes x=x", program("let x=1; x=x; print(x);"), core.program([letXEq1, print(x)])],
   [

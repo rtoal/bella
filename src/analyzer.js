@@ -59,7 +59,9 @@ export default function analyze(match) {
     must(entity.mutable, `${entity.name} is read only`, at)
   }
 
-  function mustHaveCorrectArgumentCount(argCount, paramCount, at) {
+  function mustHaveCorrectArgumentCount(args, callee, at) {
+    const argCount = args.length
+    const paramCount = callee.params.length
     const equalCount = argCount === paramCount
     must(equalCount, `${paramCount} argument(s) required but ${argCount} passed`, at)
   }
@@ -82,23 +84,18 @@ export default function analyze(match) {
     },
 
     Statement_fundec(_fun, id, parameters, _equals, exp, _semicolon) {
-      // Start by adding a new function object to this context. We won't
-      // have the number of params yet; that will come later. But we have
-      // to get the function in the context right way, to allow recursion.
+      // Add new function object to the context right away to allow recursion.
       const fun = core.fun(id.sourceString)
       mustNotAlreadyBeDeclared(id.sourceString, { at: id })
       context.add(id.sourceString, fun)
 
-      // Add the params and body to the child context, updating the
-      // function object with the parameter count once we have it.
+      // The params and body must be analyzed in a new context.
       context = new Context({ parent: context })
-      const params = parameters.rep()
-      fun.paramCount = params.length
-      const body = exp.rep()
+      fun.params = parameters.rep()
+      fun.body = exp.rep()
       context = context.parent
 
-      // Now that the function object is created, we can make the declaration.
-      return core.functionDeclaration(fun, params, body)
+      return core.functionDeclaration(fun)
     },
 
     Params(_open, idList, _close) {
@@ -165,14 +162,14 @@ export default function analyze(match) {
       return exp.rep()
     },
 
-    Exp7_call(id, _open, expList, _close) {
+    Exp7_call(id, open, expList, _close) {
       // ids used in calls must have already been declared and must be
       // bound to function entities, not to variable entities.
       const callee = context.lookup(id.sourceString)
       mustHaveBeenFound(callee, id.sourceString, { at: id })
       mustBeAFunction(callee, { at: id })
       const args = expList.asIteration().children.map(arg => arg.rep())
-      mustHaveCorrectArgumentCount(args.length, callee.paramCount, { at: id })
+      mustHaveCorrectArgumentCount(args, callee, { at: open })
       return core.call(callee, args)
     },
 

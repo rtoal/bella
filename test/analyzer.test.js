@@ -36,13 +36,13 @@ describe("The analyzer", () => {
   it(`produces the expected graph for the simple sample program`, () => {
     const program = analyze(parse(sample))
     let x = core.variable("x", true)
-    let f = core.fun("f", 1)
     let localX = core.variable("x", false)
+    let f = core.fun("f", [localX], core.binary("*", 3, localX))
     assert.deepEqual(
       program,
       core.program([
         core.variableDeclaration(x, core.call(core.standardLibrary.sqrt, [9])),
-        core.functionDeclaration(f, [localX], core.binary("*", 3, localX)),
+        core.functionDeclaration(f),
         core.whileStatement(true, [
           core.assignment(x, 3),
           core.printStatement(core.conditional(0, core.call(f, [x]), 2)),

@@ -24,8 +24,12 @@ const optimizers = {
     return d
   },
   FunctionDeclaration(d) {
-    d.body = optimize(d.body)
+    d.fun = optimize(d.fun)
     return d
+  },
+  Function(f) {
+    f.body = optimize(f.body)
+    return f
   },
   Assignment(s) {
     s.source = optimize(s.source)
@@ -44,7 +48,6 @@ const optimizers = {
     return s
   },
   Call(c) {
-    c.callee = optimize(c.callee)
     c.args = c.args.map(optimize)
     if (c.args.length === 1 && c.args[0].constructor === Number) {
       if (c.callee.name === "sqrt") return Math.sqrt(c.args[0])

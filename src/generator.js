@@ -81,7 +81,6 @@ export default function generate(program) {
           ["cos", "Math.cos"],
           ["exp", "Math.exp"],
           ["ln", "Math.log"],
-          ["hypot", "Math.hypot"],
         ]).get(e.op) ?? e.op
       return `${op}(${gen(e.operand)})`
     },

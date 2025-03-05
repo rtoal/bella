@@ -32,7 +32,7 @@ const fixtures = [
       while x < 5 {
         let y = 0;
         while y < 5 {
-          print x * y;
+          print x * sqrt(y);
           y = y + 1;
         }
         x = x + 1;
@@ -43,7 +43,7 @@ const fixtures = [
       while ((x_1 < 5)) {
       let y_2 = 0;
       while ((y_2 < 5)) {
-      console.log((x_1 * y_2));
+      console.log((x_1 * Math.sqrt(y_2)));
       y_2 = (y_2 + 1);
       }
       x_1 = (x_1 + 1);

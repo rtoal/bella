@@ -48,8 +48,7 @@ export default function generate(program) {
       return targetName(f)
     },
     PrintStatement(s) {
-      const argument = gen(s.argument)
-      output.push(`console.log(${argument});`)
+      output.push(`console.log(${gen(s.argument)});`)
     },
     Assignment(s) {
       output.push(`${targetName(s.target)} = ${gen(s.source)};`)
@@ -60,29 +59,23 @@ export default function generate(program) {
       output.push("}")
     },
     Call(c) {
-      const args = c.args.map(gen)
-      const callee = gen(c.callee)
-      return `${callee}(${args.join(",")})`
+      return `${gen(c.callee)}(${c.args.map(gen).join(",")})`
     },
     Conditional(e) {
       return `((${gen(e.test)}) ? (${gen(e.consequent)}) : (${gen(e.alternate)}))`
     },
     BinaryExpression(e) {
-      if (e.op === "hypot") {
-        return `Math.hypot(${gen(e.left)},${gen(e.right)})`
-      }
+      if (e.op === "hypot") return `Math.hypot(${gen(e.left)},${gen(e.right)})`
       return `(${gen(e.left)} ${e.op} ${gen(e.right)})`
     },
     UnaryExpression(e) {
-      const op =
-        new Map([
-          ["sqrt", "Math.sqrt"],
-          ["sin", "Math.sin"],
-          ["cos", "Math.cos"],
-          ["exp", "Math.exp"],
-          ["ln", "Math.log"],
-        ]).get(e.op) ?? e.op
-      return `${op}(${gen(e.operand)})`
+      const operand = gen(e.operand)
+      if (e.op === "sqrt") return `Math.sqrt(${operand})`
+      if (e.op === "sin") return `Math.sin(${operand})`
+      if (e.op === "cos") return `Math.cos(${operand})`
+      if (e.op === "exp") return `Math.exp(${operand})`
+      if (e.op === "ln") return `Math.log(${operand})`
+      return `${e.op}(${operand})`
     },
   }
 

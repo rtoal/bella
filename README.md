@@ -92,8 +92,7 @@ $ node src/bella.js examples/small.bella optimized
   10 | PrintStatement argument=2
 ```
 
-````
-
+```
 $ node src/bella.js examples/small.bella js
 let x_1 = 3;
 function f_3(x_2) {
@@ -103,24 +102,18 @@ while (true) {
 x_1 = 3;
 console.log(2);
 }
-
 ```
 
 Errors are displayed with a little bit of context:
 
 ```
-
-node src/bella.js examples/bad.bella js
+$ node src/bella.js examples/bad.bella js
 Error: Line 2, col 20:
-1 | let x = 5;
-
+  1 | let x = 5;
 > 2 | function f(x, y) = z + 1;
-
                          ^
-
-3 | print f(1, x);
+  3 | print f(1, x);
 Identifier z not declared
-
 ```
 
 ## Contributing
@@ -136,5 +129,3 @@ This project uses [Ohm](https://ohmjs.org) for much of the front end. Ohm is mai
 Marco Berardini chose the language name and took this picture of Bella:
 
 ![GoodDog](https://raw.githubusercontent.com/rtoal/bella/main/docs/bella.jpg)
-```
-````

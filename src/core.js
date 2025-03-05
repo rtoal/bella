@@ -36,13 +36,15 @@ export function printStatement(argument) {
 
 export function call(callee, args) {
   if (callee.intrinsic) {
+    // Intrinsics get special operators
     if (callee.params.length === 1) {
-      return { kind: "UnaryExpression", op: callee.name, operand: args[0] }
+      return unary(callee.name, args[0])
     } else {
       // Bella only has unary and binary intrinsic functions, no more
-      return { kind: "BinaryExpression", op: callee.name, left: args[0], right: args[1] }
+      return binary(callee.name, args[0], args[1])
     }
   }
+  // Nonintrinsics get a regular Call node
   return { kind: "Call", callee, args }
 }
 

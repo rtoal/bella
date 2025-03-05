@@ -52,7 +52,7 @@ let x = sqrt(9);
 function f(x) = 3 * x;
 while (true) {
   x = 3;
-  print(0 ? f(x) : 2);
+  print 0 ? f(x) : 2;
 }
 ```
 
@@ -63,24 +63,22 @@ Syntax is ok
 
 ```
 $ node src/bella.js examples/small.bella analyzed
-   1 | Program statements=[#2,#7,#11]
+   1 | Program statements=[#2,#5,#9]
    2 | VariableDeclaration variable=#3 initializer=#4
    3 | Variable name='x' mutable=true
-   4 | Call callee=#5 args=[9]
-   5 | Function name='sqrt' params=[#6]
-   6 | Variable name='x' mutable=false
-   7 | FunctionDeclaration fun=#8
-   8 | Function name='f' params=[#9] body=#10
-   9 | Variable name='x' mutable=false
-  10 | BinaryExpression op='*' left=3 right=#9
-  11 | WhileStatement test=true body=[#12,#13]
-  12 | Assignment target=#3 source=3
-  13 | PrintStatement argument=#14
-  14 | Conditional test=2 consequent=#15 alternate=2
-  15 | Call callee=#8 args=[#3]
+   4 | UnaryExpression op='sqrt' operand=9
+   5 | FunctionDeclaration fun=#6
+   6 | Function name='f' params=[#7] body=#8
+   7 | Variable name='x' mutable=false
+   8 | BinaryExpression op='*' left=3 right=#7
+   9 | WhileStatement test=true body=[#10,#11]
+  10 | Assignment target=#3 source=3
+  11 | PrintStatement argument=#12
+  12 | Conditional test=0 consequent=#13 alternate=2
+  13 | Call callee=#6 args=[#3]
 ```
 
-```
+````
 $ node src/bella.js examples/small.bella optimized
    1 | Program statements=[#2,#4,#8]
    2 | VariableDeclaration variable=#3 initializer=3
@@ -91,32 +89,38 @@ $ node src/bella.js examples/small.bella optimized
    7 | BinaryExpression op='*' left=3 right=#6
    8 | WhileStatement test=true body=[#9,#10]
    9 | Assignment target=#3 source=3
-  10 | PrintStatement argument=#11
-  11 | Call callee=#5 args=[#3]
+  10 | PrintStatement argument=2
 ```
 
-```
+````
+
 $ node src/bella.js examples/small.bella js
 let x_1 = 3;
 function f_3(x_2) {
-return (3 * x_2);
+return (3 \* x_2);
 }
 while (true) {
 x_1 = 3;
 console.log(2);
 }
+
 ```
 
 Errors are displayed with a little bit of context:
 
 ```
- node src/bella.js examples/bad.bella js
+
+node src/bella.js examples/bad.bella js
 Error: Line 2, col 20:
-  1 | let x = 5;
+1 | let x = 5;
+
 > 2 | function f(x, y) = z + 1;
+
                          ^
-  3 | print f(1, x);
+
+3 | print f(1, x);
 Identifier z not declared
+
 ```
 
 ## Contributing
@@ -132,3 +136,4 @@ This project uses [Ohm](https://ohmjs.org) for much of the front end. Ohm is mai
 Marco Berardini chose the language name and took this picture of Bella:
 
 ![GoodDog](https://raw.githubusercontent.com/rtoal/bella/main/docs/bella.jpg)
+```

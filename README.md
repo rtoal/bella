@@ -78,7 +78,7 @@ $ node src/bella.js examples/small.bella analyzed
   13 | Call callee=#6 args=[#3]
 ```
 
-````
+```
 $ node src/bella.js examples/small.bella optimized
    1 | Program statements=[#2,#4,#8]
    2 | VariableDeclaration variable=#3 initializer=3
@@ -137,3 +137,4 @@ Marco Berardini chose the language name and took this picture of Bella:
 
 ![GoodDog](https://raw.githubusercontent.com/rtoal/bella/main/docs/bella.jpg)
 ```
+````

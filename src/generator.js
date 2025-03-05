@@ -45,15 +45,7 @@ export default function generate(program) {
       output.push("}")
     },
     Function(f) {
-      const standard = new Map([
-        [standardLibrary.sqrt, "Math.sqrt"],
-        [standardLibrary.sin, "Math.sin"],
-        [standardLibrary.cos, "Math.cos"],
-        [standardLibrary.exp, "Math.exp"],
-        [standardLibrary.ln, "Math.log"],
-        [standardLibrary.hypot, "Math.hypot"],
-      ]).get(f)
-      return standard ?? targetName(f)
+      return targetName(f)
     },
     PrintStatement(s) {
       const argument = gen(s.argument)
@@ -76,10 +68,22 @@ export default function generate(program) {
       return `((${gen(e.test)}) ? (${gen(e.consequent)}) : (${gen(e.alternate)}))`
     },
     BinaryExpression(e) {
+      if (e.op === "hypot") {
+        return `Math.hypot(${gen(e.left)},${gen(e.right)})`
+      }
       return `(${gen(e.left)} ${e.op} ${gen(e.right)})`
     },
     UnaryExpression(e) {
-      return `${e.op}(${gen(e.operand)})`
+      const op =
+        new Map([
+          ["sqrt", "Math.sqrt"],
+          ["sin", "Math.sin"],
+          ["cos", "Math.cos"],
+          ["exp", "Math.exp"],
+          ["ln", "Math.log"],
+          ["hypot", "Math.hypot"],
+        ]).get(e.op) ?? e.op
+      return `${op}(${gen(e.operand)})`
     },
   }
 

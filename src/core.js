@@ -19,7 +19,7 @@ export function fun(name, params, body) {
 }
 
 export function intrinsicFunction(name, params) {
-  return { kind: "Function", name, params }
+  return { kind: "Function", name, params, intrinsic: true }
 }
 
 export function assignment(target, source) {
@@ -35,6 +35,14 @@ export function printStatement(argument) {
 }
 
 export function call(callee, args) {
+  if (callee.intrinsic) {
+    if (callee.params.length === 1) {
+      return { kind: "UnaryExpression", op: callee.name, operand: args[0] }
+    } else {
+      // Bella only has unary and binary intrinsic functions, no more
+      return { kind: "BinaryExpression", op: callee.name, left: args[0], right: args[1] }
+    }
+  }
   return { kind: "Call", callee, args }
 }
 

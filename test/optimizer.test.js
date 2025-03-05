@@ -43,6 +43,7 @@ const tests = [
   ["optimizes cos", expression("cos(0)"), 1],
   ["optimizes exp", expression("exp(1)"), Math.E],
   ["optimizes ln", expression("ln(2)"), Math.LN2],
+  ["optimizes hypot", expression("hypot(9, 12)"), 15],
   ["optimizes deeply", expression("8 * (-5) + 2 ** 3"), -32],
   ["optimizes arguments", expression("sqrt(20 + 61)"), 9],
   ["optimizes true conditionals", expression("1?3:5"), 3],

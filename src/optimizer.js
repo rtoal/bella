@@ -49,13 +49,6 @@ const optimizers = {
   },
   Call(c) {
     c.args = c.args.map(optimize)
-    if (c.args.length === 1 && c.args[0].constructor === Number) {
-      if (c.callee.name === "sqrt") return Math.sqrt(c.args[0])
-      if (c.callee.name === "sin") return Math.sin(c.args[0])
-      if (c.callee.name === "cos") return Math.cos(c.args[0])
-      if (c.callee.name === "ln") return Math.log(c.args[0])
-      if (c.callee.name === "exp") return Math.exp(c.args[0])
-    }
     return c
   },
   Conditional(c) {
@@ -84,6 +77,8 @@ const optimizers = {
           return e.left % e.right
         } else if (e.op === "**" && !(e.left === 0 && e.right == 0)) {
           return e.left ** e.right
+        } else if (e.op === "hypot") {
+          return Math.hypot(e.left, e.right)
         }
       } else if (e.left === 0 && e.op === "+") {
         return e.right
@@ -112,9 +107,12 @@ const optimizers = {
   UnaryExpression(e) {
     e.operand = optimize(e.operand)
     if (e.operand.constructor === Number) {
-      if (e.op === "-") {
-        return -e.operand
-      }
+      if (e.op === "-") return -e.operand
+      if (e.op === "sqrt") return Math.sqrt(e.operand)
+      if (e.op === "sin") return Math.sin(e.operand)
+      if (e.op === "cos") return Math.cos(e.operand)
+      if (e.op === "ln") return Math.log(e.operand)
+      if (e.op === "exp") return Math.exp(e.operand)
     }
     return e
   },

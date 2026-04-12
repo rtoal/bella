@@ -27,8 +27,9 @@ async function compileFromFile(filename, outputType) {
   }
 }
 
-if (process.argv.length !== 4) {
+if (process.argv.length === 4) {
+  await compileFromFile(process.argv[2], process.argv[3])
+} else  {
   console.log(help)
-} else {
-  compileFromFile(process.argv[2], process.argv[3])
+  process.exitCode = 2
 }

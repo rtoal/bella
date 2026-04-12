@@ -19,6 +19,42 @@ class Context {
   }
 }
 
+// The single gate for error checking. Pass in a condition that must be true.
+// Use errorLocation to give contextual information about the error that will
+// appear: this should be an object whose "at" property is a parse tree node.
+// Ohm's getLineAndColumnMessage will be used to prefix the error message.
+function must(condition, message, errorLocation) {
+  if (!condition) {
+    const prefix = errorLocation.at.source.getLineAndColumnMessage()
+    throw new Error(`${prefix}${message}`)
+  }
+}
+
+Object.assign(must, {
+  notAlreadyBeDeclared(name, context, at) {
+    must(!context.locals.has(name), `Identifier ${name} already declared`, at)
+  },
+  haveBeenFound(entity, name, at) {
+    must(entity, `Identifier ${name} not declared`, at)
+  },
+  beAVariable(entity, at) {
+    // Bella has two kinds of entities: variables and functions.
+    must(entity?.kind === "Variable", `Functions can not appear here`, at)
+  },
+  beAFunction(entity, at) {
+    must(entity?.kind === "Function", `${entity.name} is not a function`, at)
+  },
+  beMutable(entity, at) {
+    must(entity.mutable, `${entity.name} is read only`, at)
+  },
+  haveCorrectArgumentCount(args, callee, at) {
+    const argCount = args.length
+    const paramCount = callee.params.length
+    const equalCount = argCount === paramCount
+    must(equalCount, `${paramCount} argument(s) required but ${argCount} passed`, at)
+  },
+})
+
 export default function analyze(match) {
   // Track the context manually via a simple variable. The initial context
   // contains the mappings from the standard library. Add to this context
@@ -26,45 +62,6 @@ export default function analyze(match) {
   // context with the current context as its parent. When leaving a scope,
   // reset this variable to the parent context.
   let context = new Context({ locals: core.standardLibrary })
-
-  // The single gate for error checking. Pass in a condition that must be true.
-  // Use errorLocation to give contextual information about the error that will
-  // appear: this should be an object whose "at" property is a parse tree node.
-  // Ohm's getLineAndColumnMessage will be used to prefix the error message.
-  function must(condition, message, errorLocation) {
-    if (!condition) {
-      const prefix = errorLocation.at.source.getLineAndColumnMessage()
-      throw new Error(`${prefix}${message}`)
-    }
-  }
-
-  function mustNotAlreadyBeDeclared(name, at) {
-    must(!context.locals.has(name), `Identifier ${name} already declared`, at)
-  }
-
-  function mustHaveBeenFound(entity, name, at) {
-    must(entity, `Identifier ${name} not declared`, at)
-  }
-
-  function mustBeAVariable(entity, at) {
-    // Bella has two kinds of entities: variables and functions.
-    must(entity?.kind === "Variable", `Functions can not appear here`, at)
-  }
-
-  function mustBeAFunction(entity, at) {
-    must(entity?.kind === "Function", `${entity.name} is not a function`, at)
-  }
-
-  function mustBeMutable(entity, at) {
-    must(entity.mutable, `${entity.name} is read only`, at)
-  }
-
-  function mustHaveCorrectArgumentCount(args, callee, at) {
-    const argCount = args.length
-    const paramCount = callee.params.length
-    const equalCount = argCount === paramCount
-    must(equalCount, `${paramCount} argument(s) required but ${argCount} passed`, at)
-  }
 
   const builder = match.matcher.grammar.createSemantics().addOperation("rep", {
     Program(statements) {
@@ -76,7 +73,7 @@ export default function analyze(match) {
       // because we don't want the variable to come into scope until after
       // the declaration. That is, "let x=x;" should be an error (unless x
       // was already defined in an outer scope.)
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id })
+      must.notAlreadyBeDeclared(id.sourceString, context, { at: id })
       const initializer = exp.rep()
       const variable = core.variable(id.sourceString, true)
       context.add(id.sourceString, variable)
@@ -85,7 +82,7 @@ export default function analyze(match) {
 
     Statement_fundec(_fun, id, parameters, _equals, exp, _semicolon) {
       // Add new function object to the context right away to allow recursion.
-      mustNotAlreadyBeDeclared(id.sourceString, { at: id })
+      must.notAlreadyBeDeclared(id.sourceString, context, { at: id })
       const fun = core.fun(id.sourceString)
       context.add(id.sourceString, fun)
 
@@ -102,7 +99,7 @@ export default function analyze(match) {
       return idList.asIteration().children.map(id => {
         const param = core.variable(id.sourceString, false)
         // All of the parameters have to be unique
-        mustNotAlreadyBeDeclared(id.sourceString, { at: id })
+        must.notAlreadyBeDeclared(id.sourceString, context, { at: id })
         context.add(id.sourceString, param)
         return param
       })
@@ -110,7 +107,7 @@ export default function analyze(match) {
 
     Statement_assign(id, _eq, exp, _semicolon) {
       const target = id.rep()
-      mustBeMutable(target, { at: id })
+      must.beMutable(target, { at: id })
       return core.assignment(target, exp.rep())
     },
 
@@ -166,10 +163,10 @@ export default function analyze(match) {
       // ids used in calls must have already been declared and must be
       // bound to function entities, not to variable entities.
       const callee = context.lookup(id.sourceString)
-      mustHaveBeenFound(callee, id.sourceString, { at: id })
-      mustBeAFunction(callee, { at: id })
+      must.haveBeenFound(callee, id.sourceString, { at: id })
+      must.beAFunction(callee, { at: id })
       const args = expList.asIteration().children.map(arg => arg.rep())
-      mustHaveCorrectArgumentCount(args, callee, { at: open })
+      must.haveCorrectArgumentCount(args, callee, { at: open })
       return core.call(callee, args)
     },
 
@@ -177,8 +174,8 @@ export default function analyze(match) {
       // ids used in expressions must have been already declared and must
       // be bound to variable entities, not function entities.
       const entity = context.lookup(id.sourceString)
-      mustHaveBeenFound(entity, id.sourceString, { at: id })
-      mustBeAVariable(entity, { at: id })
+      must.haveBeenFound(entity, id.sourceString, { at: id })
+      must.beAVariable(entity, { at: id })
       return entity
     },
 
